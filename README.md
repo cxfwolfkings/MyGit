@@ -1,36 +1,36 @@
-# ºó¶Ë¼Ü¹¹Ê¦¼¼ÊõÍ¼Æ×
+# åç«¯æ¶æ„å¸ˆæŠ€æœ¯å›¾è°±
 https://github.com/xingshaocheng/architect-awesome
 https://github.com/xunchangguo/km
 https://github.com/ITDragonBlog/daydayup
 
-# Android¼Ü¹¹ºÏ¼¯
+# Androidæ¶æ„åˆé›†
 https://github.com/Juude/Awesome-Android-Architecture
 https://github.com/CameloeAnthony/AndroidArchitectureCollection
 https://github.com/tsy12321/BaseAndroidProject
 https://github.com/aalansehaiyang/technology-talk
 
-# »¥ÁªÍø¹«Ë¾¼¼Êõ¼Ü¹¹
+# äº’è”ç½‘å…¬å¸æŠ€æœ¯æ¶æ„
 https://github.com/davideuler
 
-# ArchSummitÈ«Çò¼Ü¹¹Ê¦·å»á
+# ArchSummitå…¨çƒæ¶æ„å¸ˆå³°ä¼š
 https://github.com/Geekbang/ArchSummit
 
-# ¸ß¿ÉÓÃ¼Ü¹¹×¨ÓÃ¡¶È«Õ»¹¤³ÌÊ¦Ö®Â·-Node.js¡·
+# é«˜å¯ç”¨æ¶æ„ä¸“ç”¨ã€Šå…¨æ ˆå·¥ç¨‹å¸ˆä¹‹è·¯-Node.jsã€‹
 https://github.com/i5ting/nodejs-fullstack
 
-# mybatis3.3.0 ÖĞÎÄ×¢ÊÍ²¢¸½´øÍ¼½â¼Ü¹¹
+# mybatis3.3.0 ä¸­æ–‡æ³¨é‡Šå¹¶é™„å¸¦å›¾è§£æ¶æ„
 https://github.com/nero520/mybatis
 
 # Netty
-NettyÊÇÓÉJBOSSÌá¹©µÄÒ»¸öjava¿ªÔ´¿ò¼Ü¡£NettyÌá¹©Òì²½µÄ¡¢ÊÂ¼şÇı¶¯µÄÍøÂçÓ¦ÓÃ³ÌĞò¿ò¼ÜºÍ¹¤¾ß£¬ÓÃÒÔ¿ìËÙ¿ª·¢¸ßĞÔÄÜ¡¢¸ß¿É¿¿ĞÔµÄÍøÂç·şÎñÆ÷ºÍ¿Í»§¶Ë³ÌĞò¡£
-Ò²¾ÍÊÇËµ£¬Netty ÊÇÒ»¸ö»ùÓÚNIOµÄ¿Í»§¡¢·şÎñÆ÷¶Ë±à³Ì¿ò¼Ü£¬Ê¹ÓÃNetty ¿ÉÒÔÈ·±£Äã¿ìËÙºÍ¼òµ¥µÄ¿ª·¢³öÒ»¸öÍøÂçÓ¦ÓÃ£¬ÀıÈçÊµÏÖÁËÄ³ÖÖĞ­ÒéµÄ¿Í»§¡¢·şÎñ¶ËÓ¦ÓÃ¡£NettyÏàµ±ÓÚ¼ò»¯ºÍÁ÷Ïß»¯ÁËÍøÂçÓ¦ÓÃµÄ±à³Ì¿ª·¢¹ı³Ì£¬ÀıÈç£º»ùÓÚTCPºÍUDPµÄsocket·şÎñ¿ª·¢¡£
-¡°¿ìËÙ¡±ºÍ¡°¼òµ¥¡±²¢²»ÓÃ²úÉúÎ¬»¤ĞÔ»òĞÔÄÜÉÏµÄÎÊÌâ¡£Netty ÊÇÒ»¸öÎüÊÕÁË¶àÖÖĞ­Òé£¨°üÀ¨FTP¡¢SMTP¡¢HTTPµÈ¸÷ÖÖ¶ş½øÖÆÎÄ±¾Ğ­Òé£©µÄÊµÏÖ¾­Ñé£¬²¢¾­¹ıÏàµ±¾«ĞÄÉè¼ÆµÄÏîÄ¿¡£×îÖÕ£¬Netty ³É¹¦µÄÕÒµ½ÁËÒ»ÖÖ·½Ê½£¬ÔÚ±£Ö¤Ò×ÓÚ¿ª·¢µÄÍ¬Ê±»¹±£Ö¤ÁËÆäÓ¦ÓÃµÄĞÔÄÜ£¬ÎÈ¶¨ĞÔºÍÉìËõĞÔ¡£
+Nettyæ˜¯ç”±JBOSSæä¾›çš„ä¸€ä¸ªjavaå¼€æºæ¡†æ¶ã€‚Nettyæä¾›å¼‚æ­¥çš„ã€äº‹ä»¶é©±åŠ¨çš„ç½‘ç»œåº”ç”¨ç¨‹åºæ¡†æ¶å’Œå·¥å…·ï¼Œç”¨ä»¥å¿«é€Ÿå¼€å‘é«˜æ€§èƒ½ã€é«˜å¯é æ€§çš„ç½‘ç»œæœåŠ¡å™¨å’Œå®¢æˆ·ç«¯ç¨‹åºã€‚
+ä¹Ÿå°±æ˜¯è¯´ï¼ŒNetty æ˜¯ä¸€ä¸ªåŸºäºNIOçš„å®¢æˆ·ã€æœåŠ¡å™¨ç«¯ç¼–ç¨‹æ¡†æ¶ï¼Œä½¿ç”¨Netty å¯ä»¥ç¡®ä¿ä½ å¿«é€Ÿå’Œç®€å•çš„å¼€å‘å‡ºä¸€ä¸ªç½‘ç»œåº”ç”¨ï¼Œä¾‹å¦‚å®ç°äº†æŸç§åè®®çš„å®¢æˆ·ã€æœåŠ¡ç«¯åº”ç”¨ã€‚Nettyç›¸å½“äºç®€åŒ–å’Œæµçº¿åŒ–äº†ç½‘ç»œåº”ç”¨çš„ç¼–ç¨‹å¼€å‘è¿‡ç¨‹ï¼Œä¾‹å¦‚ï¼šåŸºäºTCPå’ŒUDPçš„socketæœåŠ¡å¼€å‘ã€‚
+â€œå¿«é€Ÿâ€å’Œâ€œç®€å•â€å¹¶ä¸ç”¨äº§ç”Ÿç»´æŠ¤æ€§æˆ–æ€§èƒ½ä¸Šçš„é—®é¢˜ã€‚Netty æ˜¯ä¸€ä¸ªå¸æ”¶äº†å¤šç§åè®®ï¼ˆåŒ…æ‹¬FTPã€SMTPã€HTTPç­‰å„ç§äºŒè¿›åˆ¶æ–‡æœ¬åè®®ï¼‰çš„å®ç°ç»éªŒï¼Œå¹¶ç»è¿‡ç›¸å½“ç²¾å¿ƒè®¾è®¡çš„é¡¹ç›®ã€‚æœ€ç»ˆï¼ŒNetty æˆåŠŸçš„æ‰¾åˆ°äº†ä¸€ç§æ–¹å¼ï¼Œåœ¨ä¿è¯æ˜“äºå¼€å‘çš„åŒæ—¶è¿˜ä¿è¯äº†å…¶åº”ç”¨çš„æ€§èƒ½ï¼Œç¨³å®šæ€§å’Œä¼¸ç¼©æ€§ã€‚
 
 # Shiro
-Apache ShiroÊÇÒ»¸öÇ¿´óÇÒÒ×ÓÃµÄJava°²È«¿ò¼Ü,Ö´ĞĞÉí·İÑéÖ¤¡¢ÊÚÈ¨¡¢ÃÜÂëÑ§ºÍ»á»°¹ÜÀí¡£Ê¹ÓÃShiroµÄÒ×ÓÚÀí½âµÄAPI,Äú¿ÉÒÔ¿ìËÙ¡¢ÇáËÉµØ»ñµÃÈÎºÎÓ¦ÓÃ³ÌĞò,´Ó×îĞ¡µÄÒÆ¶¯Ó¦ÓÃ³ÌĞòµ½×î´óµÄÍøÂçºÍÆóÒµÓ¦ÓÃ³ÌĞò¡£
+Apache Shiroæ˜¯ä¸€ä¸ªå¼ºå¤§ä¸”æ˜“ç”¨çš„Javaå®‰å…¨æ¡†æ¶,æ‰§è¡Œèº«ä»½éªŒè¯ã€æˆæƒã€å¯†ç å­¦å’Œä¼šè¯ç®¡ç†ã€‚ä½¿ç”¨Shiroçš„æ˜“äºç†è§£çš„API,æ‚¨å¯ä»¥å¿«é€Ÿã€è½»æ¾åœ°è·å¾—ä»»ä½•åº”ç”¨ç¨‹åº,ä»æœ€å°çš„ç§»åŠ¨åº”ç”¨ç¨‹åºåˆ°æœ€å¤§çš„ç½‘ç»œå’Œä¼ä¸šåº”ç”¨ç¨‹åºã€‚
 https://github.com/zhangkaitao/shiro-example
 
-# UtilÓ¦ÓÃ¿ò¼Ü
+# Utilåº”ç”¨æ¡†æ¶
 https://github.com/dotnetcore/Util
 
 # OpenAuth.Net
@@ -39,41 +39,41 @@ https://github.com/yubaolee/OpenAuth.Core
 # Bing.NetCore
 https://github.com/bing-framework/Bing.NetCore
 
-# JeeSite ÆóÒµĞÅÏ¢»¯¿ìËÙ¿ª·¢Æ½Ì¨
+# JeeSite ä¼ä¸šä¿¡æ¯åŒ–å¿«é€Ÿå¼€å‘å¹³å°
 https://github.com/thinkgem/jeesite
 
-# AlbedoBoot ÆóÒµĞÅÏ¢»¯¿ìËÙ¿ª·¢Æ½Ì¨
+# AlbedoBoot ä¼ä¸šä¿¡æ¯åŒ–å¿«é€Ÿå¼€å‘å¹³å°
 https://github.com/somewhereMrli/albedo-boot
 
-# Java»ù´¡·şÎñÆ÷µ×²ã¼Ü¹¹
+# JavaåŸºç¡€æœåŠ¡å™¨åº•å±‚æ¶æ„
 https://github.com/alzq-zhf/ALBasicServer
 
-# java¹¤³ÌÊ¦
+# javaå·¥ç¨‹å¸ˆ
 https://github.com/superhj1987/pragmatic-java-engineer
 
-# Â³Ë¹·Æ¶û¾«Æ·¿ÎÏµÁĞ£ºÎ¢·şÎñ¼Ü¹¹´Ó¿ª·¢µ½²¿Êğ-¹¹½¨ Java Ô­ÉúÔÆ·şÎñ-Dubbo Æª
+# é²æ–¯è²å°”ç²¾å“è¯¾ç³»åˆ—ï¼šå¾®æœåŠ¡æ¶æ„ä»å¼€å‘åˆ°éƒ¨ç½²-æ„å»º Java åŸç”Ÿäº‘æœåŠ¡-Dubbo ç¯‡
 https://github.com/topsale/book-java-cloud-dubbo
 
 # SweetMusicPlayer
 https://github.com/WellerV/SweetMusicPlayer
 
-# ASP.NET MVC 4 ²å¼ş»¯¼Ü¹¹¼òµ¥ÊµÏÖ
+# ASP.NET MVC 4 æ’ä»¶åŒ–æ¶æ„ç®€å•å®ç°
 https://github.com/shiningrise/PluginMvcWeb
 
-# XxPay¾ÛºÏÖ§¸¶
+# XxPayèšåˆæ”¯ä»˜
 https://github.com/jmdhappy/xxpay-master
 
-# »ùÓÚUnity3dºÍJavaµÄÁÄÌìÊÒdemo
+# åŸºäºUnity3då’ŒJavaçš„èŠå¤©å®¤demo
 https://github.com/kenro/ChatRoom_Unity3d_Java
 
 # teaCRM
 https://github.com/xiluo/teaCRM
 
-# Ê¹ÓÃGradle ¹¹½¨Struts2¡¢SpringframeworkºÍhibernate ¿ò¼ÜµÄJava EE ÏîÄ¿Ä£°å
+# ä½¿ç”¨Gradle æ„å»ºStruts2ã€Springframeworkå’Œhibernate æ¡†æ¶çš„Java EE é¡¹ç›®æ¨¡æ¿
 https://github.com/ShinChven/GradleWebApp
 
 # CodeFrame.Web
 https://github.com/2014fighting/CodeFrame.Web
 
-# µÚÒ»¸öASP.NET MVC£¨WebApi£© + Entity FrameWork+ Unity+Redis+Sql Server/Other¼Ü¹¹µÄweb¿ª·¢¼Ü¹¹Éè¼Æ
+# ç¬¬ä¸€ä¸ªASP.NET MVCï¼ˆWebApiï¼‰ + Entity FrameWork+ Unity+Redis+Sql Server/Otheræ¶æ„çš„webå¼€å‘æ¶æ„è®¾è®¡
 https://github.com/zpc870921/EFMvcFrameApp
