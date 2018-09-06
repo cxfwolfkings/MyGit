@@ -5,19 +5,13 @@ package com.colin.observer;
  */
 public class Test  {
     public static void main(String[] args) {
-        Subject mySub = new ConcreteSubject();
-        ObserverA myObserverA = new ObserverA(mySub);
-        ObserverB myObserverB = new ObserverB();
-        mySub.attach(myObserverA);
-        mySub.attach(myObserverB);
-
-        mySub.setState("ADD", "One --- 1");
-        mySub.setState("ADD", "Tow --- 2");
-        mySub.sendNotify();
-
-        myObserverA.change("DEL", "Tow --- 2");
-        myObserverA.change("ADD", "Three --- 3");
-        myObserverA.change("ADD", "Four --- 4");
-        myObserverA.notifySub();  
+    	// 创建一个被观察者
+    	ConcreteSubject mySub = new ConcreteSubject();
+        // 创建一个观察者
+        Observer myObserver = new ConcreteObserver();
+        // 观察者观察被观察者
+        mySub.attach(myObserver);
+        // 被观察者开始行动
+        mySub.doSomething();
     }
 }

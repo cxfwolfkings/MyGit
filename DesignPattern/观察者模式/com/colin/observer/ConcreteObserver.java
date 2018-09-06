@@ -1,36 +1,16 @@
 package com.colin.observer;
 
-import java.util.Vector;
-
 /**
  * A concrete observer This concrete observer can change subject through call a
  * concrete subject setState function
  * 具体观察者角色
  */
-public class ObserverA implements Observer {
-	private Vector<String> strVector;
-	private Subject sub;
-
-	public ObserverA(Subject s) {
-		sub = s;
-		// strVector = new Vector();
-	}
-
-	public void update(Subject subject) {
-		strVector = subject.getState();
-		System.out.println("----- ObserverA will be updated -----");
-		for (int i = 0; i < strVector.size(); i++) {
-			System.out.println("Num " + i + " is :" + (String) strVector.get(i));
-		}
-	}
-
-	public void change(String action, String str) {
-		sub.setState(action, str);
-		// we can auto update
-		// sub.sendNotify();
-	}
-
-	public void notifySub() {
-		sub.sendNotify();
+public class ConcreteObserver extends Observer {
+	/**
+	 * 实现更新方法
+	 */
+	public void update() {
+		System.out.println("接收到消息，并进行处理！");
+		
 	}
 }

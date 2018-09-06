@@ -1,10 +1,10 @@
-package Facade;
+package com.colin.facade;
 
 /**
  * A very simple test
- * ©м╩╖╫ги╚
+ * О©╫м╩О©╫О©╫О©╫и╚
  * @author Charles
- * @date   2016дЙ1тб21ху ионГ11:16:15
+ * @date   2016О©╫О©╫1О©╫О©╫21О©╫О©╫ О©╫О©╫О©╫О©╫11:16:15
  */
 public class Test  {
     public static void main(String[] args) {
@@ -14,7 +14,7 @@ public class Test  {
 }
 
 /**
- * всо╣мЁ╫ги╚
+ * О©╫О©╫о╣мЁО©╫О©╫и╚
  */
 class Wall {
     public Wall() {
@@ -23,7 +23,7 @@ class Wall {
 }
 
 /**
- * всо╣мЁ╫ги╚
+ * О©╫О©╫о╣мЁО©╫О©╫и╚
  */
 class Door {
     public Door() {
@@ -32,8 +32,8 @@ class Door {
 }
 
 /**
- * цецФ╫ги╚
- * р╩╦Ж╥©╪Д(4цФг╫ё╛р╩ихце)
+ * О©╫О©╫О©╫О©╫О©╫и╚
+ * р╩О©╫О©╫О©╫О©╫О©╫О©╫(4О©╫О©╫г╫О©╫О©╫р╩О©╫О©╫О©╫О©╫)
  */
 class FacadeRoom {
     public void CreateRoom() {
