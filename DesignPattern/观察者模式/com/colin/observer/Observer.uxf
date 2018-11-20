@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="13.0">
-  <zoom_level>10</zoom_level>
+  <zoom_level>12</zoom_level>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>10</x>
-      <y>170</y>
-      <w>230</w>
-      <h>100</h>
+      <x>36</x>
+      <y>96</y>
+      <w>276</w>
+      <h>120</h>
     </coordinates>
     <panel_attributes>/Subject/
 --
@@ -22,10 +22,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>310</x>
-      <y>180</y>
-      <w>140</w>
-      <h>50</h>
+      <x>396</x>
+      <y>108</y>
+      <w>168</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>/Observer/
 --
@@ -37,10 +37,10 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>50</x>
-      <y>330</y>
-      <w>140</w>
-      <h>50</h>
+      <x>84</x>
+      <y>288</y>
+      <w>168</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>ConcreteSubject
 --
@@ -51,10 +51,10 @@ doSomething(): void</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>310</x>
-      <y>330</y>
-      <w>130</w>
-      <h>30</h>
+      <x>396</x>
+      <y>288</y>
+      <w>156</w>
+      <h>36</h>
     </coordinates>
     <panel_attributes>ConcreteObserver</panel_attributes>
     <additional_attributes/>
@@ -62,10 +62,10 @@ doSomething(): void</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>110</x>
-      <y>260</y>
-      <w>30</w>
-      <h>90</h>
+      <x>156</x>
+      <y>204</y>
+      <w>36</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
@@ -73,10 +73,10 @@ doSomething(): void</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>370</x>
-      <y>220</y>
-      <w>30</w>
-      <h>130</h>
+      <x>468</x>
+      <y>156</y>
+      <w>36</w>
+      <h>156</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;110.0</additional_attributes>
@@ -84,10 +84,10 @@ doSomething(): void</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>230</x>
-      <y>190</y>
-      <w>100</w>
-      <h>30</h>
+      <x>300</x>
+      <y>120</y>
+      <w>120</w>
+      <h>36</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;80.0;10.0</additional_attributes>

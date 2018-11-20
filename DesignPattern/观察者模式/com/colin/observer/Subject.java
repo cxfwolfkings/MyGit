@@ -5,7 +5,7 @@ import java.util.*;
 import com.colin.observer.Observer;
 /**
  *  Subject interface
- *  In this interface , we can only declare top 3 function, 
+ *  In this interface, we can only declare top 3 function, 
  *  other function we can define in an abstract class which implements this interface
  *  抽象目标角色
  */
