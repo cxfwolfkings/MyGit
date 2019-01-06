@@ -186,7 +186,7 @@ public class JdbcHelper {
 	    } catch (SQLException e) { 
 	        e.printStackTrace(); 
 	    } finally { 
-	    	ConnectionManager.closeConnection(conn);
+	    	ConnectionManager.close(conn);
 	    } 
 	} 
 
@@ -212,7 +212,7 @@ public class JdbcHelper {
 	    } catch (SQLException e) { 
 	        e.printStackTrace(); 
 	    } finally { 
-	    	ConnectionManager.closeConnection(conn);
+	    	ConnectionManager.close(conn);
 	    } 
 	} 
 
@@ -235,7 +235,7 @@ public class JdbcHelper {
 	    } catch (SQLException e) { 
 	        e.printStackTrace(); 
 	    } finally { 
-	        ConnectionManager.closeConnection(conn);
+	        ConnectionManager.close(conn);
 	    } 
 	} 
 

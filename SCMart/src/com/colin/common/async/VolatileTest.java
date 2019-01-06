@@ -39,7 +39,7 @@ public class VolatileTest {
  * @version 1.0.0
  * @date    2018年9月12日 上午11:21:57
  */
-class BankAccount {
+class BankAccount1 {
 
 	private int balance;
 
