@@ -1,4 +1,4 @@
-package com.colin.collections.list.stack;
+package com.colin.ds.list.stack;
 
 /**
  * 

@@ -1,4 +1,4 @@
-package com.colin.dictionary;
+package com.colin.ds.map;
 
 import java.util.HashMap;
 import java.util.Hashtable;

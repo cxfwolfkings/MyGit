@@ -1,4 +1,4 @@
-package com.colin.collections.tree;
+package com.colin.ds.tree;
 
 /**
  * 二叉树的二叉链表结点结构定义，如果再增加一个指向双亲的结点则称为三叉链表

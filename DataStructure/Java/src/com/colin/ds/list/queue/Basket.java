@@ -1,4 +1,4 @@
-package com.colin.collections.list.queue;
+package com.colin.ds.list.queue;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

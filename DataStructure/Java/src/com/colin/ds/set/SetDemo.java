@@ -1,4 +1,4 @@
-package com.colin.collections.set;
+package com.colin.ds.set;
 
 import java.util.Comparator;
 import java.util.HashSet;

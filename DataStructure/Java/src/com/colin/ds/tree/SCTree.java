@@ -1,4 +1,4 @@
-package com.colin.collections.tree;
+package com.colin.ds.tree;
 
 import java.util.ArrayList;
 import java.util.List;

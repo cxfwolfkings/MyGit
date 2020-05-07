@@ -1,4 +1,4 @@
-package com.colin.collections;
+package com.colin.ds;
 
 /**
  * 数组

@@ -1,4 +1,4 @@
-package com.colin.queue;
+package com.colin.ds.list.queue;
 
 import java.util.LinkedList;
 import java.util.PriorityQueue;

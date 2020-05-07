@@ -1,4 +1,4 @@
-package com.colin.collections.tree;
+package com.colin.ds.tree;
 
 /**
  * 线索二叉树的二叉链表结点结构定义 

@@ -1,4 +1,4 @@
-package com.colin.collections.list.stack;
+package com.colin.ds.list.stack;
 
 import java.io.Serializable;
 import java.util.Stack;
