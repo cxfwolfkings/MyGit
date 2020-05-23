@@ -1,12 +1,11 @@
-package DataStructures.Trees;
+package com.colin.ds.tree;
 
 /**
+ * 二叉树
+ *
  * This entire class is used to build a Binary Tree data structure.
  * There is the Node Class and the Tree Class, both explained below.
- */
-
-
-/**
+ *
  * A binary tree is a data structure in which an element
  * has two successors(children). The left child is usually
  * smaller than the parent, and the right child is usually
@@ -25,22 +24,22 @@ public class BinaryTree {
      * @author Unknown
      *
      */
-    class Node {
+    static class Node {
         /** Data for the node */
         public int data;
         /** The Node to the left of this one */
-        public Node left;
+        Node left;
         /** The Node to the right of this one */
-        public Node right;
+        Node right;
         /** The parent of this node */
-        public Node parent;
+        Node parent;
 
         /**
          * Constructor of Node
          *
          * @param value Value to put in the node
          */
-        public Node(int value) {
+        Node(int value) {
             data = value;
             left = null;
             right = null;
@@ -65,16 +64,19 @@ public class BinaryTree {
      * @param key Value being looked for
      * @return The node if it finds it, otherwise returns the parent
      */
-    public Node find(int key) {
+    private Node find(int key) {
         Node current = root;
         while (current != null) {
             if (key < current.data) {
-                if (current.left == null)
-                    return current;    //The key isn't exist, returns the parent
+                if (current.left == null) {
+                    // The key isn't exist, returns the parent
+                    return current;
+                }
                 current = current.left;
             } else if (key > current.data) {
-                if (current.right == null)
+                if (current.right == null) {
                     return current;
+                }
                 current = current.right;
             } else {    // If you find the value return it
                 return current;
@@ -90,21 +92,20 @@ public class BinaryTree {
      */
     public void put(int value) {
         Node newNode = new Node(value);
-        if (root == null)
+        if (root == null) {
             root = newNode;
+        }
         else {
-            //This will return the soon to be parent of the value you're inserting
+            // This will return the soon to be parent of the value you're inserting
             Node parent = find(value);
-
-            //This if/else assigns the new node to be either the left or right child of the parent
+            // This if/else assigns the new node to be either the left or right child of the parent
+            assert parent != null;
             if (value < parent.data) {
                 parent.left = newNode;
                 parent.left.parent = parent;
-                return;
             } else {
                 parent.right = newNode;
                 parent.right.parent = parent;
-                return;
             }
         }
     }
@@ -120,30 +121,29 @@ public class BinaryTree {
         Node temp = find(value);
 
         //If the value doesn't exist
-        if (temp.data != value)
+        assert temp != null;
+        if (temp.data != value) {
             return false;
-
+        }
         //No children
         if (temp.right == null && temp.left == null) {
-            if (temp == root)
+            if (temp == root) {
                 root = null;
-
-                //This if/else assigns the new node to be either the left or right child of the parent
-            else if (temp.parent.data < temp.data)
+            }
+            //This if/else assigns the new node to be either the left or right child of the parent
+            else if (temp.parent.data < temp.data) {
                 temp.parent.right = null;
-            else
+            } else {
                 temp.parent.left = null;
+            }
             return true;
         }
-
         //Two children
         else if (temp.left != null && temp.right != null) {
             Node successor = findSuccessor(temp);
-
             //The left tree of temp is made the left tree of the successor
             successor.left = temp.left;
             successor.left.parent = successor;
-
             //If the successor has a right child, the child's grandparent is it's new parent
             if(successor.parent!=temp){
                 if(successor.right!=null){
@@ -157,22 +157,20 @@ public class BinaryTree {
                     successor.right.parent=successor;
                 }
             }
-
             if (temp == root) {
                 successor.parent = null;
                 root = successor;
                 return true;
             }
-
             //If you're not deleting the root
             else {
                 successor.parent = temp.parent;
-
                 //This if/else assigns the new node to be either the left or right child of the parent
-                if (temp.parent.data < temp.data)
+                if (temp.parent.data < temp.data) {
                     temp.parent.right = successor;
-                else
+                } else {
                     temp.parent.left = successor;
+                }
                 return true;
             }
         }
@@ -184,14 +182,13 @@ public class BinaryTree {
                     root = temp.right;
                     return true;
                 }
-
                 temp.right.parent = temp.parent;
-
                 //Assigns temp to left or right child
-                if (temp.data < temp.parent.data)
+                if (temp.data < temp.parent.data) {
                     temp.parent.left = temp.right;
-                else
+                } else {
                     temp.parent.right = temp.right;
+                }
                 return true;
             }
             //If it has a left child
@@ -200,14 +197,13 @@ public class BinaryTree {
                     root = temp.left;
                     return true;
                 }
-
                 temp.left.parent = temp.parent;
-
                 //Assigns temp to left or right side
-                if (temp.data < temp.parent.data)
+                if (temp.data < temp.parent.data) {
                     temp.parent.left = temp.left;
-                else
+                } else {
                     temp.parent.right = temp.left;
+                }
                 return true;
             }
         }
@@ -220,9 +216,10 @@ public class BinaryTree {
      * @param n Node that you want to find the Successor of
      * @return The Successor of the node
      */
-    public Node findSuccessor(Node n) {
-        if (n.right == null)
+    private Node findSuccessor(Node n) {
+        if (n.right == null) {
             return n;
+        }
         Node current = n.right;
         Node parent = n.right;
         while (current != null) {
@@ -246,7 +243,7 @@ public class BinaryTree {
      *
      * @param localRoot The local root of the binary tree
      */
-    public void inOrder(Node localRoot) {
+    private void inOrder(Node localRoot) {
         if (localRoot != null) {
             inOrder(localRoot.left);
             System.out.print(localRoot.data + " ");
@@ -259,7 +256,7 @@ public class BinaryTree {
      *
      * @param localRoot The local root of the binary tree
      */
-    public void preOrder(Node localRoot) {
+    private void preOrder(Node localRoot) {
         if (localRoot != null) {
             System.out.print(localRoot.data + " ");
             preOrder(localRoot.left);
@@ -272,7 +269,7 @@ public class BinaryTree {
      *
      * @param localRoot The local root of the binary tree
      */
-    public void postOrder(Node localRoot) {
+    private void postOrder(Node localRoot) {
         if (localRoot != null) {
             postOrder(localRoot.left);
             postOrder(localRoot.right);
