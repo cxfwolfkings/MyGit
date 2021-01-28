@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: LeadChina.PM.Smtl
-server:
-  port: 6300

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.spring.dao.UserMapper">
+
+    <!--做返回结果映射,添加了resultMap之后,在select中就可以将resultMap指定为userResultMap,结果会映射为对象-->
+    <resultMap id="userResultMap" type="User">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="identifyType" column="identify_type"/>
+        <result property="identifyNumber" column="identify_number"/>
+        <!--关联Department表,javaType中指定Department的类路径,property中是对象的属性-->
+        <association property="department" javaType="com.cn.entities.mysql.Department">
+            <!--此处的id指Department对象中的属性,dept_id是user表中的dept_id,关联字段-->
+            <id property="id" column="dept_id"/>
+            <result property="name" column="dept_name"/>
+        </association>
+    </resultMap>
+
+    <sql id="select_statement">
+        select
+        u.id,
+        u.name,
+        u.password,
+        u.identify_number,
+        u.identify_type,
+        u.dept_id,
+        t.id,
+        t.name dept_name
+        from user u left join department t on u.dept_id = t.id
+        where 1 = 1
+    </sql>
+
+    <select id="fetchById" parameterType="java.lang.Object" resultMap="userResultMap">
+        <include refid="select_statement"/>
+        and t.id = #{id}
+    </select>
+
+    <select id="fetchList" parameterType="java.util.HashMap" resultMap="userResultMap">
+        <include refid="select_statement"/>
+    </select>
+
+    <insert id="save" parameterType="User">
+        insert into user(name,password,identify_type,identify_number,dept_id)
+        values(#{name},#{password},#{identifyType},#{identifyNumber},#{department.id})
+    </insert>
+
+    <update id="update" parameterType="User">
+        update user
+        <trim prefix="set" suffix="where id = #{id}" suffixOverrides=",">
+            <if test="name != null">name=#{name},</if>
+            <if test="password != null">password=#{password},</if>
+            <if test="identifyType != null">identify_type=#{identifyType},</if>
+            <if test="identifyNumber != null">identify_number=#{identifyNumber},</if>
+            <if test="department.id != null">dept_id=#{department.id},</if>
+        </trim>
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Object">
+        delete from user where id = #{id};
+    </delete>
+
+</mapper>

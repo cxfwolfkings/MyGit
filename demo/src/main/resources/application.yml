@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/mysql?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true
+    username: root
+    password: 123
+
+  redis:
+    open: true
+    host: 127.0.0.1
+    port: 6379
+    password:
+    database: 0
+    timeout: 5000
+
+  pool:
+    max-active: 60
+    max-wait: -1
+    max-idle: 8
+    min-idle: 0
+
+mybatis:
+  #需要扫描的map文件
+  mapperLocations: classpath:mybatis/**/*Mapper.xml
