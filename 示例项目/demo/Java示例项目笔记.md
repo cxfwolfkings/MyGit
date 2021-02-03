@@ -2,6 +2,8 @@
 
 用springBoot来创建单个服务，用SpringCloud来管理这些微服务。
 
+在使用本项目之前，需要对[SpringBoot](http://spring.io/projects/spring-boot)，[freemaker](https://freemarker.apache.org/)，[layui](https://www.layui.com/)，[flyway](https://flywaydb.org/)等基本操作有所了解。
+
 **SpringCloud的五大神兽**
 
 1. 注册/服务发现——Netflix Eureka
