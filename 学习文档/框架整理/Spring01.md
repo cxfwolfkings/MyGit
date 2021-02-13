@@ -14,15 +14,15 @@
 
 ### Spring
 
-![x](E:\WorkingDir\Office\Resources\spring_frm.png)
+![x](../../Resources/spring_frm.png)
 
 Spring MVC 框架的工作流程图及注释：
 
-![x](E:\WorkingDir\Office\Resources\spring_mvc.gif)
+![x](../../Resources/spring_mvc.gif)
 
 MyBatis 的结构图：
 
-![x](E:\WorkingDir\Office\Resources\mybatis.png)
+![x](../../Resources/mybatis.png)
 
 ### SpringBoot
 

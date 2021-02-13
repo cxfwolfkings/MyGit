@@ -213,3 +213,9 @@ public override void OnApplicationInitialization(ApplicationInitializationContex
 }
 ```
 
+
+
+**参考：**
+
+- [Abp vNext异常处理的缺陷/改造方案](https://mp.weixin.qq.com/s?__biz=MzAwNTMxMzg1MA==&mid=2654082113&idx=2&sn=77967db16f8ac89170babe1289b7c2d5&chksm=80d83014b7afb9028d73cd19b660e8210bf0ef67bff26dd45812e693dc860c083743b1ac5a3b&mpshare=1&scene=23&srcid=12258iZBsKLSOtktwQH56y2M&sharer_sharetime=1608855285076&sharer_shareid=83c85f3c4ddf8afec618435580a94a3e#rd)
+- [一曲肝腸斷博客](https://www.cnblogs.com/william-xu/)
