@@ -48,3 +48,4 @@ vim /mydata/redis/node-6/conf/redis.conf
 **参考：**
 
 - https://www.cnblogs.com/yslss/p/12985791.html
+- https://www.cnblogs.com/hutao722/
