@@ -1,0 +1,12 @@
+<mapper namespace="com.ssm.demo.dao.DescriptionDao">
+    <resultMap type="com.ssm.demo.entity.Description" id="DescriptionResult">
+        <result property="id" column="id"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="getLastDescription" resultMap="DescriptionResult">
+        select id,description,create_time from
+        tb_class_four ORDER BY  id DESC limit 1
+    </select>
+</mapper>
