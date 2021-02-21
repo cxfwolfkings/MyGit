@@ -1,9 +1,6 @@
 # Spring
 
 1. 简介
-   - [Spring](#Spring)
-   - SSH
-   - SSM
 2. 实战
 4. 总结
 5. 升华
