@@ -2974,6 +2974,7 @@ select version();
 
 -- 引擎查询
 show create table {tableName};
+SHOW TABLE STATUS FROM dbName WHERE name = 'tbName'
 
 -- 事务隔离级别查询方法
 select @@tx_isolation;
