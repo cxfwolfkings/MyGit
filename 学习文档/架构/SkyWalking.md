@@ -95,3 +95,6 @@ set ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=SkyAPM.Agent.AspNetCore
 - [SkyWalking-github](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fapache%2Fincubator-skywalking)
 - [SkyWalking-dotnet](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2FSkyAPM%2FSkyAPM-dotnet)
 - [SkyWalking-sample](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fbeckjin%2FSkyWalkingSample)
+- [在 ASP.NET Core 中集成 Skywalking APM](https://www.cnblogs.com/savorboard/p/asp-net-core-skywalking.html)
+- https://github.com/SkyAPM/SkyAPM-dotnet#examples
+
