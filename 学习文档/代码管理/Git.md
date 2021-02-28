@@ -190,6 +190,8 @@ git update-index --assume-unchanged <PATH>
 
 ## 下载速度
 
+**1. 代理**
+
 1、打开本机host文件
 
 2、利用[网站](https://www.ipaddress.com/)查询IP：github.com, github.global.ssl.fastly.net
@@ -197,13 +199,37 @@ git update-index --assume-unchanged <PATH>
 3、配置在host中
 
 ```sh
-140.82.113.4 github.com
-199.232.5.194 github.global.ssl.fastly.net
+140.82.112.3 github.com
+199.232.69.194 github.global.ssl.fastly.net
 ```
 
 同时将DNS信息配置到Git安装目录下的hosts文件中（未验证）
 
 4、刷新 DNS 缓存：`ipconfig /flushdns`，OK!
+
+**2. git shallow clone**
+
+```sh
+git clone https://github.com/xxx --depth 1
+cd xxx
+git fetch --unshallow
+```
+
+解释一下这两条命令:
+
+`git clone --depth 1` 本身会让clone下来的是最近的一个commit的文件夹状态，而不是整个文件夹的记录
+
+然后`git fetch --unshallow`可以在之后，将整个文件夹的状态下载下来
+
+**3. 使用github cnpmjs镜像**
+
+将本来的`git clone https://github.com/xxx.git` 改成：`git clone https://github.com.cnpmjs.org/xxx.git`
+
+**4. 使用码云**
+
+[码云](https://link.zhihu.com/?target=https%3A//gitee.com)本身支持直接从github一键导入repo，然后直接从码云上clone就会非常方便
+
+
 
 **git push一直停留在writing objects，速度慢**
 
