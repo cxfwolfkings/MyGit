@@ -1,4 +1,4 @@
-package demo.nio;
+package com.colin.study.demo.nio;
 
 import java.io.IOException;
 import java.io.InputStream;

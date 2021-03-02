@@ -1,4 +1,4 @@
-package demo.netty.server;
+package com.colin.study.demo.netty.server;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;

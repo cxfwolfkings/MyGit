@@ -18,6 +18,7 @@ package com.charles.game.fish.client;
  */
 import java.io.FileInputStream;
 import sun.audio.AudioStream;
+
 public class MusicPlay extends Thread{
  FileInputStream music;//声明文件流对象
  private static final int SleepTime = 1500;

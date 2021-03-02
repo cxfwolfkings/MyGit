@@ -1,4 +1,4 @@
-package com.angel.test;
+package com.colin.study.demo.algorism;
 
 import java.io.BufferedWriter;
 import java.io.File;

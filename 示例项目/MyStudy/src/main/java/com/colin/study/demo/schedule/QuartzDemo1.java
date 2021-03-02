@@ -1,4 +1,4 @@
-package demo.schedule;
+package com.colin.study.demo.schedule;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;

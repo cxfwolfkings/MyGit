@@ -1,4 +1,4 @@
-package demo.netty.client;
+package com.colin.study.demo.netty.client;
 
 import java.net.InetSocketAddress;
 import java.util.Scanner;

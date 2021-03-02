@@ -1,4 +1,4 @@
-package demo.netty.client;
+package com.colin.study.demo.netty.client;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;

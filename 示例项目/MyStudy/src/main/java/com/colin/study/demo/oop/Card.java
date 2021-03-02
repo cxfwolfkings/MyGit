@@ -1,4 +1,4 @@
-package demo.oop;
+package com.colin.study.demo.oop;
 
 import java.util.Arrays;
 
