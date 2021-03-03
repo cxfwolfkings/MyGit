@@ -299,6 +299,8 @@ refs/for 的意义在于推送代码经过code review后才merge到nsdl-3.0分�
 '''
 ```
 
+
+
 ## 常见问题
 
 刚配置好的git仓库服务器，首次提交的时候会报如下错误：
@@ -369,7 +371,7 @@ git提交时报错：`Updates were rejected because the tip of your current bran
 
    `git push -u origin [name]`
 
-***恢复历史版本***
+**恢复历史版本**
 
 ```sh
 # 查询commit_id
@@ -377,6 +379,23 @@ git log
 git reset commit_id 文件路径
 git checkout -- 文件路径
 ```
+
+
+
+### OpenSSL SSL_connect: Connection was reset in connection to github.com:443
+
+最近在拉取或推送时经常碰到的一个问题，网上解决方案：
+
+```sh
+git config --global http.sslVerify false
+git config --global https.sslVerify false
+git --config --unset http.proxy
+git --config --unset https.proxy
+```
+
+经验证（日期：2021-03-01），并没有什么效果，多试几次拉取或推送，会成功一次，此时不要关闭窗口，进入其它git目录，拉取或推送也能成功（验证一次）。真正的解决方案还有待研究！
+
+
 
 ## Git&nbsp;hook配置
 
