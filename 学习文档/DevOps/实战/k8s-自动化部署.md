@@ -4,7 +4,8 @@
 2. [部署Harbor仓库](#部署Harbor仓库)
 3. [jenkins-slave镜像搭建](#jenkins-slave镜像搭建)
 4. [部署jenkins](#部署jenkins)
-5. [jenkins+gitlab挂钩](#jenkins+gitlab挂钩)
+5. [部署gitlab](#部署gitlab)
+6. [jenkins+gitlab挂钩](#jenkins+gitlab挂钩)
 
 
 
@@ -236,7 +237,148 @@ root 中的密钥是私钥，并且在服务器上需要把公钥配置到 gitla
 
 
 
+## 部署gitlab
+
+### Centos7
+
+```sh
+sudo yum install -y curl policycoreutils-python openssh-server openssh-clients perl
+sudo systemctl enable sshd
+sudo systemctl start sshd
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo systemctl reload firewalld
+
+sudo yum install postfix
+sudo systemctl enable postfix
+sudo systemctl start postfix
+
+curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+
+sudo EXTERNAL_URL="https://gitlab.example.com" yum install -y gitlab-ce
+```
+
+### Kubernetes
+
+1、下载gitlab-ce包
+
+```sh
+helm search repo gitlab
+helm fetch ali-stable/gitlab-ce
+```
+
+2、修改chats包里面的values值
+
+> 这里新建一个gitlab.yaml，然后把下面的信息粘贴进去，注意需要修改storageclass
+
+```yaml
+image: gitlab/gitlab-ce:9.4.1-ce.0
+externalUrl: http://gitlab.glodon.com
+gitlabRootPassword: "Qwerty123456"
+serviceType: NodePort
+ingress:
+  annotations:
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+  enabled: true
+  tls:
+      # - secretName: gitlab.cluster.local
+      #   hosts:
+      #     - gitlab.cluster.local
+  url: gitlab.xxxx.com
+sshPort: 22
+httpPort: 80
+httpsPort: 443
+livenessPort: http
+readinessPort: http
+resources:
+  ## GitLab requires a good deal of resources. We have split out Postgres and
+  ## redis, which helps some. Refer to the guidelines for larger installs.
+  ## ref: https://docs.gitlab.com/ce/install/requirements.html#hardware-requirements
+  requests:
+    memory: 1Gi
+    cpu: 500m
+  limits:
+    memory: 2Gi
+    cpu: 1
+persistence:
+  ## This volume persists generated configuration files, keys, and certs.
+  ##
+  gitlabEtc:
+    enabled: true
+    size: 1Gi
+    ## If defined, volume.beta.kubernetes.io/storage-class: <storageClass>
+    ## Default: volume.alpha.kubernetes.io/storage-class: default
+    ##
+    storageClass: prod-sc
+    accessMode: ReadWriteOnce
+  ## This volume is used to store git data and other project files.
+  ## ref: https://docs.gitlab.com/omnibus/settings/configuration.html#storing-git-data-in-an-alternative-directory
+  ##
+  gitlabData:
+    enabled: true
+    size: 10Gi
+    ## If defined, volume.beta.kubernetes.io/storage-class: <storageClass>
+    ## Default: volume.alpha.kubernetes.io/storage-class: default
+    ##
+    storageClass: "prod-sc"
+    accessMode: ReadWriteOnce
+postgresql:
+  # 9.6 is the newest supported version for the GitLab container
+  imageTag: "9.6"
+  cpu: 1000m
+  memory: 1Gi
+  postgresUser: gitlab
+  postgresPassword: gitlab
+  postgresDatabase: gitlab
+  persistence:
+    size: 10Gi
+    storageClass: "prod-sc"
+redis:
+  redisPassword: "gitlab"
+  resources:
+    requests:
+      memory: 1Gi
+  persistence:
+    size: 10Gi
+    storageClass: "prod-sc"
+```
+
+3、启动gitlab
+
+```sh
+helm install --name gitlab  -f gitlab.yaml ./ 
+```
+
+
+
 ## jenkins+gitlab挂钩
+
+上面已经创建了一个任务，然后我们开始配置这个任务里面的内容并且与gitlab挂钩。
+
+1、进入testproject里面配置
+
+按照以下图配置，然后点击保存，这样就完成了任务配置。
+
+![x](../../../Resources/k8s012.png)
+
+接下来就是要配置一下gitlab
+
+![x](../../../Resources/k8s013.png)
+
+![x](../../../Resources/k8s014.png)
+
+2、配置gitlab
+
+在gitlab中创建一个项目Testproject，然后进入到项目中，点击 “Settings” => Integrations，把上面URL和Token复制到这边，然后点击保存即可。
+
+![x](../../../Resources/k8s015.png)
+
+接下来就是测试一下这个配置是否可以用
+
+
+
+
 
 
 
