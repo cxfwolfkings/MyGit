@@ -167,7 +167,7 @@ C:\path\to\app>set FLASK_APP=hello.py
 在 PowerShell 下：
 
 ```ps
-PS C:\path\to\app> $env:FLASK_APP = "hello.py"
+PS C:\path\to\app> $env:FLASK_APP="hello.py"
 ```
 
 还可以使用 `python -m flask`：
