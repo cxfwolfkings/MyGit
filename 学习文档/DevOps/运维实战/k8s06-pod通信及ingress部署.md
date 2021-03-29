@@ -8,7 +8,7 @@
 
 ## 1、同节点之间的通信
 
-同一节点的pod之间通过cni网桥转发数据包。(brctl show可以查看)
+同一节点的pod之间通过cni网桥转发数据包。（`brctl show`可以查看）
 
 ## 2、不同节点的pod之间的通信需要网络插件支持
 
@@ -20,9 +20,9 @@
 
   VTEP：VXLAN Tunnel End Point（虚拟隧道端点），在Flannel中 VNI的默认值是1，这也是为什么宿主机的VTEP设备都叫flannel.1的原因。
 
-  Cni0: 网桥设备，每创建一个pod都会创建一对 veth pair。其中一端是pod中的eth0，另一端是Cni0网桥中的端口（网卡）。
+  Cni0：网桥设备，每创建一个pod都会创建一对 veth pair。其中一端是pod中的eth0，另一端是Cni0网桥中的端口（网卡）。
 
-  Flannel.1: TUN设备(虚拟网卡)，用来进行 vxlan 报文的处理（封包和解包）。不同node之间的pod数据流量都从overlay设备以隧道的形式发送到对端。
+  Flannel.1：TUN设备（虚拟网卡），用来进行 vxlan 报文的处理（封包和解包）。不同node之间的pod数据流量都从overlay设备以隧道的形式发送到对端。
 
   Flanneld：flannel在每个主机中运行flanneld作为agent，它会为所在主机从集群的网络地址空间中，获取一个小的网段subnet，本主机内所有容器的IP地址都将从中分配。同时Flanneld监听K8s集群数据库，为flannel.1设备提供封装数据时必要的mac、ip等网络数据信息。
 
