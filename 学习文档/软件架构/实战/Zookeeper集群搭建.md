@@ -124,63 +124,103 @@ zkCli.cmd -server 121.196.182.26:2181,121.196.182.26:2182,121.196.182.26:2183
 docker-compose.yml
 
 ```yml
-version: '3.1'
+version: '3.7'
 
 services:
   zoo1:
     image: zookeeper
+    container_name: zoo1
     restart: always
     privileged: true
     hostname: zoo1
     ports:
       - 2181:2181
-    volumes: # 挂载数据
-      - /usr/local/zookeeper-cluster/node4/data:/data
-      - /usr/local/zookeeper-cluster/node4/datalog:/datalog
+    volumes:
+      - /data/zookeeper/node1/data:/data
+      - /data/zookeeper/node1/datalog:/datalog
     environment:
-      ZOO_MY_ID: 4
-      ZOO_SERVERS: server.4=0.0.0.0:2888:3888;2181 server.5=zoo2:2888:3888;2181 server.6=zoo3:2888:3888;2181
+      ZOO_MY_ID: 1
+      ZOO_SERVERS=server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
     networks:
       default:
         ipv4_address: 172.18.0.14
 
   zoo2:
     image: zookeeper
+    container_name: zoo2
     restart: always
     privileged: true
     hostname: zoo2
     ports:
       - 2182:2181
-    volumes: # 挂载数据
-      - /usr/local/zookeeper-cluster/node5/data:/data
-      - /usr/local/zookeeper-cluster/node5/datalog:/datalog
+    volumes:
+      - /data/zookeeper/node2/data:/data
+      - /data/zookeeper/node2/datalog:/datalog
     environment:
-      ZOO_MY_ID: 5
-      ZOO_SERVERS: server.4=zoo1:2888:3888;2181 server.5=0.0.0.0:2888:3888;2181 server.6=zoo3:2888:3888;2181
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
     networks:
       default:
         ipv4_address: 172.18.0.15
 
   zoo3:
     image: zookeeper
+    container_name: zoo2
     restart: always
     privileged: true
     hostname: zoo3
     ports:
       - 2183:2181
-    volumes: # 挂载数据
-      - /usr/local/zookeeper-cluster/node6/data:/data
-      - /usr/local/zookeeper-cluster/node6/datalog:/datalog
+    volumes:
+      - /data/zookeeper/node3/data:/data
+      - /data/zookeeper/node3/datalog:/datalog
     environment:
-      ZOO_MY_ID: 6
-      ZOO_SERVERS: server.4=zoo1:2888:3888;2181 server.5=zoo2:2888:3888;2181 server.6=0.0.0.0:2888:3888;2181
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
     networks:
       default:
         ipv4_address: 172.18.0.16
 
-networks: # 自定义网络
+networks:
   default:
     external:
       name: colin_default
+```
+
+执行
+
+```sh
+# 进入docker-compose.yml所在目录执行
+docker-compose up
+```
+
+检查部署情况
+
+```sh
+docker exec -it zoo1 /bin/bash
+
+zkServer.sh status
+/*
+ZooKeeper JMX enabled by default
+Using config: /conf/zoo.cfg
+Mode: follower
+*/
+```
+
+zkui可视化管理zookeeper
+
+```sh
+# 拉取项目 
+git clone https://github.com/DeemOpen/zkui.git
+# 编译
+cd zkui
+mvn clean install
+# 修改配置文件
+vim config.cfg
+zkServer=192.168.48.64:2181,192.168.48.64:2182,192.168.48.64:2183
+# 启动zkui
+nohup java -jar target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar &
+# 登录
+# 账号密码 admin/manager
 ```
 

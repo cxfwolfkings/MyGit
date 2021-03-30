@@ -104,5 +104,10 @@ expain出来的信息有10列：
 
 通过收集统计信息不可能存在结果
 
-参考：[杰克思勒](http://www.cnblogs.com/tufujie/)
+参考：
 
+- https://www.jianshu.com/p/b3f9007be020
+
+- [杰克思勒](http://www.cnblogs.com/tufujie/)
+
+- [数据库链接池终于搞对了，这次直接从100ms优化到3ms](https://www.jianshu.com/p/c26d1ed16bb4)
