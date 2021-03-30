@@ -132,19 +132,22 @@ spec:
       periodSeconds: 3
     readinessProbe:
       httpGet:
-        path: /hostname.html
+        path: /hostname.html  # 就绪探针文件
         port: 80
       initialDelaySeconds: 3
       periodSeconds: 3
 ```
 
-工作正常
+执行命令
 
-![x](../../../Resources/k8s023.png)
-
-如果修改就绪探针的文件是/test.html（默认不存在），可以看到状态是启动的，但是始终没有就绪。
-
-![x](../../../Resources/k8s024.png)
+```sh
+kubectl create -f live.yml
+kubectl get pod
+kubectl get pod -o wide
+# 如果修改就绪探针的文件是/test.html（默认不存在），可以看到状态是启动的，但是始终没有就绪。
+kubectl delete -f live.yml
+# 修改 live.yml 后重建
+```
 
 查看pod详细情况`kubectl describe pod liveness-exec`可以看到html404报错（找不到主页）
 
@@ -160,11 +163,7 @@ kubectl get pod
 
 如果存活探针的端口改为8080（故意弄错），然后启动，服务会应为检测不到8080端口而不断重启，默认是always，除非改为none就不会被重启
 
-![x](../../../Resources/k8s024.png)
-
 创建一个service服务，虽然没有镜像，但是可以被解析到。
-
-![x](../../../Resources/k8s025.png)
 
 ```yaml
 apiVersion: v1
@@ -183,9 +182,10 @@ spec:
 ```sh
 kubectl create -f service.yaml
 kubectl get svc
+# 进入容器
+kubectl attach demo -it
+nslookup myservice
 ```
-
-![x](../../../Resources/k8s026.png)
 
 初始化容器运行之前，普通镜像会一直等待，直到初始化镜像（initContainers）运行完成
 
@@ -208,8 +208,15 @@ spec:
     command: ['sh', '-c', "until nslookup myservice.default.svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
 ```
 
-![x](../../../Resources/k8s027.png)
+执行命令
 
-重新开启service服务，少等片刻，可以看到init正常
-
-![x](../../../Resources/k8s028.png)
+```sh
+# 删除刚才的service服务
+kubectl delete -f service.yml
+# 创建init服务
+kubectl create -f init.yml
+# 可以看到init服务一直在初始化等待状态，因为它的初始化镜像是service（已经停止）
+kubectl get pod
+# 重新开启service服务，少等片刻，可以看到init正常
+kubectl create -f service.yml
+```
