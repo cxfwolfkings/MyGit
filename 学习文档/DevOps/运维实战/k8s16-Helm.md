@@ -8,6 +8,8 @@
 
 ## 简介
 
+[官网介绍](https://helm.sh/)
+
 什么是 Helm？ 
 
 Helm 为团队提供了在 Kubernetes 内部创建、安装和管理应用程序时需要协作的工具，有点类似于 Ubuntu 中的 APT 或 CentOS 中的 YUM。
@@ -38,6 +40,14 @@ Helm 组件和相关术语
 
 - 使用 helm install 命令在 Kubernetes 集群中部署的 Chart 称为 Release。可以理解为 Helm 使用 Chart 包部署的一个应用实例。
 
+![x](../../../Resources/k8s068.png)
+
+Helm V3 与 V2 最大的区别在于去掉了tiller：
+
+![x](../../../Resources/k8s069.png)
+
+
+
 
 
 ## 安装
@@ -67,6 +77,8 @@ vim ~/.bashrc
 # --------------------------------------------------------
 source <(helm completion bash)
 # --------------------------------------------------------
+# 第二种方法
+echo "source <(helm completion bash)" >> ~/.bashrc
 
 source ~/.bashrc
 ```
@@ -75,7 +87,7 @@ source ~/.bashrc
 
 ## 使用
 
-1、添加常用仓库
+**1、添加常用仓库**
 
 ```sh
 helm repo add stable https://kubernetes-charts.storage.googleapis.com/
@@ -86,9 +98,11 @@ helm repo update # Make sure we get the latest list of charts
 helm repo add ali-stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts  #阿里云
 # 查看仓库列表
 helm repo list
+# 搜索官方helm hub chart库：
+helm search hub wordpress
 ```
 
-2、安装一个mysql的chart
+**2、安装一个 mysql 的 chart**
 
 ```sh
 helm install stable/mysql --generate-name
@@ -162,6 +176,36 @@ helm list
 ```sh
 helm uninstall mysql-1604294571
 ```
+
+**3. 使用 Helm 安装 redis**
+
+```sh
+# 下载redis镜像到harbor仓库
+docker pull redis:6.0.7
+docker tag redis:6.0.7 reg.westos.org/library/redis:6.0.7
+docker push reg.westos.org/library/redis:6.0.7
+# 下载redis-ha镜像包
+helm pull dandydev/redis-ha
+tar zxf redis-ha-4.12.9.tgz
+cd redis-ha/
+# 修改values.yaml内容
+vim values.yaml
+# 有两个地方改成 hardAntiAffinity: false
+# 修改managed-nfs-storage为默认模式（如果没有做，需要做）
+kubectl patch storageclass managed-nfs-storage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+# 查看managed-nfs-storage模式
+kubectl get storageclasses.storage.k8s.io
+kubectl get pvc
+kubectl delete pvc --all
+# 安装redis
+helm install redis-ha .
+# 卸载
+helm uninstall redis-ha
+# 成功部署redis-ha
+kubectl get pod -w
+```
+
+
 
 
 
