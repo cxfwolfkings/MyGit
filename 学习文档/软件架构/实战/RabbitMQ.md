@@ -1,5 +1,10 @@
 # RabbitMQ
 
+1. 安装
+2. 集群部署
+3. 管理
+4. 编程
+
 
 
 ## 安装
@@ -21,6 +26,491 @@ RabbitMQ 提供了命令行管理工具 rabbitmqctl，但推荐使用 [Managemen
 Web 控制台：http://127.0.0.1:15672/#/，以 guest / guest 登录。支持交换器、队列、绑定的管理，以及消息代理的监控。
 
 除了 Web 控制台，Management 插件亦提供 RESTful API 形式的接口。完整的 API 文档，位于：http://127.0.0.1:15672/api/index.html。
+
+
+
+## 集群部署
+
+创建映射目录
+
+```sh
+mkdir -p /data/rabbit/1/data /data/rabbit/1/config \
+         /data/rabbit/2/data /data/rabbit/2/config \
+         /data/rabbit/3/data /data/rabbit/3/config \
+         /data/rabbit/hosts
+```
+
+**docker-compose方式**
+
+docker-compose.yml
+
+```yaml
+version: '3.7'
+
+services:
+  rabbit1:
+    container_name: rabbit1
+    image: rabbitmq:3.7-management-alpine
+    restart: always
+    hostname: rabbit1
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=123
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+      - "25672:25672"
+    volumes:
+      - /data/rabbit/1/data:/var/lib/rabbitmq
+      - /data/rabbit/1/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
+      - /data/rabbit/hosts:/etc/hosts
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.2
+      
+      
+  rabbit2:
+    container_name: rabbit2
+    image: rabbitmq:3.7-management-alpine
+    restart: always
+    hostname: rabbit2
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=123
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+      - "25672:25672"
+    volumes:
+      - /data/rabbit/2/data:/var/lib/rabbitmq
+      - /data/rabbit/2/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
+      - /data/rabbit/hosts:/etc/hosts
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.3
+        
+  rabbit3:
+    container_name: rabbit3
+    image: rabbitmq:3.7-management-alpine
+    restart: always
+    hostname: rabbit3
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=123
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+      - "25672:25672"
+    volumes:
+      - /data/rabbit/3/data:/var/lib/rabbitmq
+      - /data/rabbit/3/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
+      - /data/rabbit/hosts:/etc/hosts
+    networks:
+      extnetwork:
+        ipv4_address: 172.19.0.4
+      
+networks:
+   extnetwork:
+      ipam:
+         config:
+         - subnet: 172.19.0.0/24
+           gateway: 172.19.0.1
+```
+
+在 /etc/hosts 文件中，添加各节点的信息
+
+```sh
+172.19.0.2 rabbit1
+172.19.0.3 rabbit2
+172.19.0.4 rabbit3
+```
+
+参考：
+
+- https://blog.csdn.net/wzc900810/article/details/108507298
+- https://www.jianshu.com/p/34d60096b33f
+
+
+
+**k8s方式**
+
+rabbit-sc.yml
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: alicloud-nas-subpath-public
+provisioner: nasplugin.csi.alibabacloud.com
+mountOptions:
+- nolock,tcp,noresvport
+- vers=3
+parameters:
+  volumeAs: subpath
+  server: "xxxxxx.cn-hangzhou.nas.aliyuncs.com:/"
+reclaimPolicy: Retain
+```
+
+rabbit-ns.yml
+
+```yml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wind-rabbit
+```
+
+rabbit-cfm.yaml
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rmq-cluster-config
+  namespace: wind-rabbit
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+    enabled_plugins: |
+      [rabbitmq_management,rabbitmq_peer_discovery_k8s].
+    rabbitmq.conf: |
+      loopback_users.guest = false
+
+      ## Clustering
+      cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+      cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+      cluster_formation.k8s.address_type = hostname
+      ##################################################
+      # public-service is rabbitmq-cluster's namespace #
+      ##################################################
+      cluster_formation.k8s.hostname_suffix = .rmq-cluster.public-service.svc.cluster.local
+      cluster_formation.node_cleanup.interval = 10
+      cluster_formation.node_cleanup.only_log_warning = true
+      cluster_partition_handling = autoheal
+      ## queue master locator
+      queue_master_locator=min-masters
+```
+
+rabbit-rbac.yaml
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rmq-cluster
+  namespace: wind-rabbit
+  
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: rmq-cluster
+  namespace: wind-rabbit
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+    verbs:
+      - get
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: rmq-cluster
+  namespace: wind-rabbit
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: rmq-cluster
+subjects:
+- kind: ServiceAccount
+  name: rmq-cluster
+  namespace: wind-rabbit
+```
+
+rabbit-secret.yaml
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rmq-cluster-secret
+  namespace: wind-rabbit
+stringData:
+  cookie: ERLANG_COOKIE
+  username: admin
+  password: admin123
+type: Opaque
+```
+
+rabbit-svc.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rmq-cluster
+  namespace: wind-rabbit
+  labels:
+    app: rmq-cluster
+spec:
+  selector:
+    app: rmq-cluster
+  clusterIP: 172.21.11.245  # 指定clusterIP，方便使用
+  ports:
+  - name: http
+    port: 15672
+    protocol: TCP
+    targetPort: 15672
+  - name: amqp
+    port: 5672
+    protocol: TCP
+    targetPort: 5672
+  type: ClusterIP
+```
+
+rabbit-sts.yaml
+
+```yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rmq-cluster
+  namespace: wind-rabbit
+  labels:
+    app: rmq-cluster
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rmq-cluster
+  serviceName: rmq-cluster
+  template:
+    metadata:
+      labels:
+        app: rmq-cluster
+    spec:
+      serviceAccountName: rmq-cluster
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.7-management
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 15672
+          name: http
+          protocol: TCP
+        - containerPort: 5672
+          name: amqp
+          protocol: TCP
+        command:
+        - sh
+        args:
+        - -c
+        - cp -v /etc/rabbitmq/rabbitmq.conf ${RABBITMQ_CONFIG_FILE}; exec docker-entrypoint.sh
+          rabbitmq-server
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: rmq-cluster-secret
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: rmq-cluster-secret
+        - name: RABBITMQ_ERLANG_COOKIE
+          valueFrom:
+            secretKeyRef:
+              key: cookie
+              name: rmq-cluster-secret
+        - name: K8S_SERVICE_NAME
+          value: rmq-cluster
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: RABBITMQ_USE_LONGNAME
+          value: "true"
+        - name: RABBITMQ_NODENAME
+          value: rabbit@$(POD_NAME).rmq-cluster.$(POD_NAMESPACE).svc.cluster.local
+        - name: RABBITMQ_CONFIG_FILE
+          value: /var/lib/rabbitmq/rabbitmq.conf
+        livenessProbe:
+          exec:
+            command:
+            - rabbitmqctl
+            - status
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - rabbitmqctl
+            - status
+          initialDelaySeconds: 10
+          timeoutSeconds: 10
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/rabbitmq
+          readOnly: false
+        - name: rabbitmq-storage
+          mountPath: /var/lib/rabbitmq
+          readOnly: false
+      volumes:
+      - name: config-volume
+        configMap:
+          items:
+          - key: rabbitmq.conf
+            path: rabbitmq.conf
+          - key: enabled_plugins
+            path: enabled_plugins
+          name: rmq-cluster-config
+      - name: rabbitmq-storage
+        persistentVolumeClaim:
+          claimName: rabbitmq-cluster-storage
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-cluster-storage
+  namespace: wind-rabbit
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: alicloud-nas-subpath-public
+```
+
+rabbit-ingress.yaml
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rabbitmq
+  namespace: wind-rabbit
+spec:
+  rules:
+    - host: rabbitmq.lzxlinux.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: rmq-cluster
+              servicePort: 15672
+```
+
+部署完毕后
+
+```yaml
+kubectl get all -n wind-rabbit
+```
+
+添加hosts：`rabbitmq.lzxlinux.com`，使用初始账号密码`guest/guest`登录即可。
+
+如果使用的是 default 命名空间，就使用 sed 命令将yaml文件中 wind-rabbit 全局替换为 default：
+
+```sh
+sed -i 's/wind-rabbit/default/g' ./*
+kubectl apply -f .
+```
+
+如果使用的是nfs持久化存储，对于nfs目录赋予755权限，然后其它节点安装nfs即可：
+
+```sh
+# 选择一个节点上做nfs共享
+yum install -y nfs-utils rpcbind
+mkdir -p /data/rabbitmq
+vim /etc/exports
+# ----------------------------------------------------
+/data/rabbitmq 192.168.30.0/24(rw,sync,no_root_squash)
+# ----------------------------------------------------
+chmod -R 755 /data/rabbitmq
+exportfs -arv
+systemctl enable rpcbind && systemctl start rpcbind
+systemctl enable nfs && systemctl start nfs
+
+# nfs部署完毕。对于需要使用nfs的node节点，都要安装nfs：
+yum install -y nfs-utils
+```
+
+rabbit-pv.yaml
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: rabbitmq-pv
+  labels:
+    app: rmq-cluster
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 192.168.30.129
+    path: /data/rabbitmq
+```
+
+rabbit-pvc.yaml
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-cluster-storage
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      app: rmq-cluster
+```
+
+再次部署一遍
+
+```sh
+kubectl get pv
+kubectl get pvc
+kubectl get pod
+kubectl get svc
+```
+
+参考：
+
+- https://blog.csdn.net/miss1181248983/article/details/106440068/
 
 
 
@@ -90,7 +580,7 @@ curl -u guest:guest -XDELETE http://127.0.0.1:15672/api/bindings/hello/e/exchang
 
 ## 编程
 
-### 生产者
+**生产者**
 
 ```java
 package com.gitchat.rmq;
@@ -130,14 +620,14 @@ public class Producer_1 {
 - `Connection` 和 `Channel`，不建议每次操作都新创建实例，建议使用 “资源池”；
 - 使用 `Channel` 发送消息的部分，需要位于 “临界区”，避免多个线程并发操作相同的 `Channel` 实例。
 
-### 消费者
+**消费者**
 
 RabbitMQ 支持 “Push API” 和 “Pull API”：
 
 - 使用 “Push API”，即 “订阅” 队列，新的消息将自动 “投递” 到消费者；
 - 使用 “Pull API”，即 “显式” 地获取新的消息。
 
-##### **消费者，使用 Push API**
+**消费者，使用 Push API**
 
 ```java
 package com.gitchat.rmq;
@@ -201,7 +691,7 @@ public class Consumer_1 {
 
 需要说明，示例程序中，将 main 线程阻塞，原因在于：消费者的 “回调函数” 位于独立的线程中调用。
 
-##### **消费者，使用 Pull API**
+**消费者，使用 Pull API**
 
 ```java
 package com.gitchat.rmq;
