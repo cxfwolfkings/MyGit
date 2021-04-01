@@ -2,20 +2,62 @@
 
 
 
-## compose部署apollo
+## compose搭建apollo
 
-**数据库准备：**
+**准备工作：**
 
 首先部署mysql，创建用户并设置密码，这里是`root`/`123`
+
+```sh
+mkdir -p /data/mysql/1/data /data/mysql/1/conf /data/mysql/1/logs /data/apollo/logs
+vim /data/mysql/docker-compose.yml
+```
+
+mysql 的 docker-compose.yml
+
+```yaml
+version: '3.7'
+
+services:
+  mysql:
+    image: mysql
+    container_name: mysql
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --lower_case_table_names=1
+    restart: unless-stopped # docker的重启策略：在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器
+    environment:
+      MYSQL_ROOT_PASSWORD: 123 # root用户的密码
+    ports:
+      - 3306:3306
+    volumes:
+      - /data/mysql/1/data:/var/lib/mysql
+      - /data/mysql/1/conf:/etc/mysql/conf.d
+      - /data/mysql/1/logs:/logs
+    networks:
+      default:
+        ipv4_address: 172.18.1.100
+
+networks:
+  default:
+    external:
+      name: lead_pm1
+```
+
+导入apollo数据库脚本
 
 ```sh
 cd /software
 git clone https://github.com/ctripcorp/apollo.git
 mysql -uroot -p123 < apollo/scripts/sql/apolloportaldb.sql
 mysql -uroot -p123 < apollo/scripts/sql/apolloconfigdb.sql
+# 编辑 apollo 脚本
+vim /data/apollo/docker-compose.yml
 ```
 
-docker-compose.yaml
+apollo 的 docker-compose.yaml
 
 ```yaml
 version: '3.7'
@@ -31,11 +73,13 @@ services:
     ports:
       - 8081:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://192.168.30.131:3306/ApolloConfigDB?characterEncoding=utf8mb4
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloConfigDB?characterEncoding=utf
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123
     restart: always
-    network_mode: host
+    networks:
+      default:
+        ipv4_address: 172.18.1.2
 
   apollo-adminservice:
     depends_on:
@@ -49,11 +93,13 @@ services:
     ports:
       - 8082:8090
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://192.168.30.131:3306/ApolloConfigDB?characterEncoding=utf8mb4
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloConfigDB?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123
     restart: always
-    network_mode: host
+    networks:
+      default:
+        ipv4_address: 172.18.1.3
 
   apollo-portal:
     depends_on:
@@ -67,13 +113,15 @@ services:
     ports:
       - 8083:8070
     environment:  
-      - SPRING_DATASOURCE_URL=jdbc:mysql://192.168.30.131:3306/ApolloPortalDB?characterEncoding=utf8mb4
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloPortalDB?characterEncoding=utf8mb4
       - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=123456789
+      - SPRING_DATASOURCE_PASSWORD=123
       - APOLLO_PORTAL_ENVS=dev
-      - DEV_META=http://192.168.30.131:8080
+      - DEV_META=http://172.18.1.2:8080
     restart: always
-    network_mode: host
+    networks:
+      default:
+        ipv4_address: 172.18.1.4
 
 volumes:
   logs:
@@ -81,25 +129,32 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /tmp/logs
+      device: /data/apollo/logs
+      
+networks:
+  default:
+    external:
+      name: lead_pm1
 ```
 
 参数说明：
 
-- SPRING_DATASOURCE_URL：对应环境 ApolloPortalDB 的地址
-- SPRING_DATASOURCE_USERNAME：对应环境 ApolloPortalDB 的用户名
+- `SPRING_DATASOURCE_URL`：对应环境 ApolloPortalDB 的地址
+- `SPRING_DATASOURCE_USERNAME`：对应环境 ApolloPortalDB 的用户名
 
-- SPRING_DATASOURCE_PASSWORD：对应环境 ApolloPortalDB 的密码
+- `SPRING_DATASOURCE_PASSWORD`：对应环境 ApolloPortalDB 的密码
 
-- APOLLO_PORTAL_ENVS（可选）：对应 ApolloPortalDB 中的 apollo.portal.envs 配置项，如果没有在数据库中配置的话，可以通过此环境参数配置
+- `APOLLO_PORTAL_ENVS`（可选）：对应 ApolloPortalDB 中的 apollo.portal.envs 配置项，如果没有在数据库中配置的话，可以通过此环境参数配置
 
-- DEV_META/PRO_META（可选）：配置对应环境的 Meta Service 地址，以 `${ENV}_META` 命名，如果 ApolloPortalDB 中配置了 apollo.portal.meta.servers，则以 apollo.portal.meta.servers 中的配置为准
+- `DEV_META/PRO_META`（可选）：配置对应环境的 Meta Service 地址，以 `${ENV}_META` 命名，如果 ApolloPortalDB 中配置了 apollo.portal.meta.servers，则以 apollo.portal.meta.servers 中的配置为准
 
 ```sh
 # 生成
 docker-compose up -d
 docker-compose ps
 ```
+
+访问web界面：http://0.0.0.0:8083/，默认账户密码是 `apollo / admin`。
 
 
 
@@ -410,12 +465,6 @@ helm install -f apollo-portal-values.yaml apollo-portal apollo/apollo-portal -n 
 ```
 
 这里将 apollo-portal 部署到单独的一个 namespace 中。
-
-#### 访问服务
-
-打开 `apollo.xxxx.com` 就可以打开管理页面
-
-默认账户密码是 `apollo` 和 `admin`，登录进去就可以享受配置中心带来的便利，到此搭建结束。
 
 **参考文档**
 

@@ -1,16 +1,12 @@
 # Zookeeper
 
-### 安装
 
-我们这里拿比较简单的分布式应用配置管理为例来说明。
 
-假设我们的程序是分布式部署在多台机器上，如果我们要改变程序的配置文件，需要逐台机器去修改，非常麻烦，现在把这些配置全部放到zookeeper上去，保存在 zookeeper 的某个目录节点中，然后所有相关应用程序对这个目录节点进行监听，一旦配置信息发生变化，每个应用程序就会收到 zookeeper 的通知，然后从 zookeeper 获取新的配置信息应用到系统中。
+## 安装
 
-![x](http://121.196.182.26:6100/public/images/zk04.png)
 
-接下来，我们马上来学习下zookeeper的安装及使用，并开发一个小程序来实现zookeeper这个分布式配置管理的功能。
 
-#### 单机模式安装
+### 单机模式
 
 1、配置JAVA环境，检验环境：`java -version`
 
@@ -41,7 +37,7 @@ bin/zkServer.sh start
 bin/zkCli.sh
 ```
 
-#### Zookeeper使用
+**Zookeeper使用**
 
 ```sh
 # 1、查看当前 ZooKeeper 中所包含的内容
@@ -136,7 +132,11 @@ set /username dragon
 
 修改完成后，我们看见两个程序后台都及时收到了他们监听的目录节点数据变更后的值。
 
-#### 集群模式安装
+
+
+### 集群模式
+
+**服务器安装**
 
 本例搭建的是伪集群模式，即一台机器上启动三个zookeeper实例组成集群，真正的集群模式无非就是实例IP地址不同，搭建方法没有区别。
 
@@ -231,3 +231,273 @@ bin/zkServer.sh status conf/zoo-3.cfg
 文章来源：[https://my.oschina.net/u/3796575/blog/1845035](https://my.oschina.net/u/3796575/blog/1845035)
 
 https://zhuanlan.zhihu.com/p/67654401?from_voters_page=true
+
+**docker安装**
+
+1、准备工作
+
+```sh
+# 本地创建目录
+mkdir -p /data/zookeeper/1/data /data/zookeeper/1/datalog /data/zookeeper/1/logs \
+         /data/zookeeper/2/data /data/zookeeper/2/datalog /data/zookeeper/2/logs \
+         /data/zookeeper/3/data /data/zookeeper/3/datalog /data/zookeeper/3/logs
+# 查看目录信息
+ll /data/zookeeper
+```
+
+2、创建集群
+
+```sh
+docker pull zookeeper
+
+docker run -d -p 2181:2181 --name zookeeper_node1 --privileged --restart always --network colin_default --ip 172.18.0.4 \
+-v /data/zookeeper/1/data:/data \
+-v /data/zookeeper/1/datalog:/datalog \
+-v /data/zookeeper/1/logs:/logs \
+-e ZOO_MY_ID=1 \
+-e "ZOO_SERVERS=server.1=172.18.1.5:2888:3888;2181 server.2=172.18.1.6:2888:3888;2181 server.3=172.18.1.7:2888:3888;2181" \
+zookeeper
+
+docker run -d -p 2182:2181 --name zookeeper_node2 --privileged --restart always --network colin_default --ip 172.18.0.5 \
+-v /data/zookeeper/2/data:/data \
+-v /data/zookeeper/2/datalog:/datalog \
+-v /data/zookeeper/2/logs:/logs \
+-e ZOO_MY_ID=2 \
+-e "ZOO_SERVERS=server.1=172.18.1.5:2888:3888;2181 server.2=172.18.1.6:2888:3888;2181 server.3=172.18.1.7:2888:3888;2181" \
+zookeeper
+
+docker run -d -p 2183:2181 --name zookeeper_node3 --privileged --restart always --network colin_default --ip 172.18.0.6 \
+-v /data/zookeeper/3/data:/data \
+-v /data/zookeeper/3/datalog:/datalog \
+-v /data/zookeeper/3/logs:/logs \
+-e ZOO_MY_ID=3 \
+-e "ZOO_SERVERS=server.1=172.18.1.5:2888:3888;2181 server.2=172.18.1.6:2888:3888;2181 server.3=172.18.1.7:2888:3888;2181" \
+zookeeper
+```
+
+>`--privileged=true` 参数是为了解决【chown: changing ownership of '/data': Permission denied】，也可以省略 true
+>
+>`docker logs -f zookeeper_node1` 查看日志  
+>`docker inspect 4bfa6bbeb936` 查看配置  
+
+3、进入容器内部验证
+
+```sh
+# 进入容器
+docker exec -it zookeeper_node1 bash
+# ----------------进入容器--------------------
+./bin/zkServer.sh status
+exit
+```
+
+4、开启防火墙，供外部访问
+
+```sh
+firewall-cmd --zone=public --add-port=2181/tcp --permanent
+firewall-cmd --zone=public --add-port=2182/tcp --permanent
+firewall-cmd --zone=public --add-port=2183/tcp --permanent
+systemctl restart firewalld
+firewall-cmd --list-all
+```
+
+5、在本地，用zookeeper的客户端连接虚拟机上的集群
+
+- 下载：[https://www.apache.org/dyn/closer.cgi/zookeeper/](https://www.apache.org/dyn/closer.cgi/zookeeper/)
+- 解压，修改zoo_sample.cfg 文件名为 zoo.cfg
+- 修改配置：
+
+```sh
+# The number of milliseconds of each tick
+tickTime=2000
+# The number of ticks that the initial
+# synchronization phase can take
+initLimit=10
+# The number of ticks that can pass between
+# sending a request and getting an acknowledgement
+syncLimit=5
+# the directory where the snapshot is stored.
+# do not use /tmp for storage, /tmp here is just
+# example sakes.
+# 数据目录
+dataDir=E:\\Arms\\apache-zookeeper-3.5.8-bin\\data
+# 日志目录
+dataLogDir=E:\\Arms\\apache-zookeeper-3.5.8-bin\\log
+# the port at which the clients will connect
+clientPort=2181
+# the maximum number of client connections.
+# increase this if you need to handle more clients
+#maxClientCnxns=60
+#
+# Be sure to read the maintenance section of the
+# administrator guide before turning on autopurge.
+#
+# http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+#
+# The number of snapshots to retain in dataDir
+#autopurge.snapRetainCount=3
+# Purge task interval in hours
+# Set to "0" to disable auto purge feature
+#autopurge.purgeInterval=1
+```
+
+配置文件简单解析：
+
+1. tickTime：这个时间是作为 zookeeper 服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个 tickTime 时间就会发送一个心跳。
+
+2. dataDir：顾名思义就是 zookeeper 保存数据的目录，默认情况下，Zookeeper 将写数据的日志文件也保存在这个目录里。
+
+3. dataLogDir：顾名思义就是 zookeeper 保存日志文件的目录
+
+4. clientPort：这个端口就是客户端连接 zookeeper 服务器的端口，Zookeeper 会监听这个端口，接受客户端的访问请求。
+
+本地客户端连接集群：
+
+```sh
+zkCli.cmd -server 121.196.182.26:2181,121.196.182.26:2182,121.196.182.26:2183
+```
+
+**compose安装**
+
+docker-compose.yml
+
+```yml
+version: '3.7'
+
+services:
+  zoo1:
+    image: zookeeper
+    container_name: zoo1
+    restart: always
+    privileged: true
+    hostname: zoo1
+    ports:
+      - 2181:2181
+    volumes:
+      - /data/zookeeper/1/data:/data
+      - /data/zookeeper/1/datalog:/datalog
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      default:
+        ipv4_address: 172.18.1.5
+
+  zoo2:
+    image: zookeeper
+    container_name: zoo2
+    restart: always
+    privileged: true
+    hostname: zoo2
+    ports:
+      - 2182:2181
+    volumes:
+      - /data/zookeeper/2/data:/data
+      - /data/zookeeper/2/datalog:/datalog
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zoo3:2888:3888;2181
+    networks:
+      default:
+        ipv4_address: 172.18.1.6
+
+  zoo3:
+    image: zookeeper
+    container_name: zoo3
+    restart: always
+    privileged: true
+    hostname: zoo3
+    ports:
+      - 2183:2181
+    volumes:
+      - /data/zookeeper/3/data:/data
+      - /data/zookeeper/3/datalog:/datalog
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+    networks:
+      default:
+        ipv4_address: 172.18.1.7
+
+networks:
+  default:
+    external:
+      name: lead_pm1
+```
+
+执行
+
+```sh
+# 进入docker-compose.yml所在目录执行
+docker-compose up -d
+```
+
+检查部署情况
+
+```sh
+docker exec -it zoo1 /bin/bash
+
+zkServer.sh status
+/*
+ZooKeeper JMX enabled by default
+Using config: /conf/zoo.cfg
+Mode: follower
+*/
+```
+
+zkui可视化管理zookeeper
+
+第一种方式：源码编译
+
+```sh
+# 拉取项目 
+git clone https://github.com/DeemOpen/zkui.git
+# 编译
+cd zkui
+mvn clean install
+# 修改配置文件
+vim config.cfg
+zkServer=10.30.202.101:2181,10.30.202.101:2182,10.30.202.101:2183
+# 启动zkui
+nohup java -jar target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar &
+# 登录
+# 账号密码 admin/manager
+```
+
+第二种方式：docker镜像
+
+```sh
+docker run -d --restart=always --name zkui -p 9090:9090 \
+           -e ZKUI_ZK_SERVER=<external_DNS/IP>:2181 qnib/zkui
+```
+
+**问题：**
+
+1、stat is not executed because it is not in the whitelist
+
+方法1：在 zoo.cfg 文件里加入配置项让指令放行
+
+```sh
+# 开启四字命令
+4lw.commands.whitelist=*
+```
+
+方法2：在zk的启动脚本zkServer.sh中新增放行指令
+
+```sh
+    ZOOMAIN="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=$JMXPORT -Dcom.sun.management.jmxremote.authenticate=$JMXAUTH -Dcom.sun.management.jmxremote.ssl=$JMXSSL -Dzookeeper.jmx.log4j.disable=$JMXLOG4J org.apache.zookeeper.server.quorum.QuorumPeerMain"
+  fi
+else
+    echo "JMX disabled by user request" >&2
+    ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
+fi
+ 
+# 添加VM环境变量-Dzookeeper.4lw.commands.whitelist=*
+ZOOMAIN="-Dzookeeper.4lw.commands.whitelist=* ${ZOOMAIN}"
+ 
+if [ "x$SERVER_JVMFLAGS" != "x" ]
+then
+    JVMFLAGS="$SERVER_JVMFLAGS $JVMFLAGS"
+fi
+```
+
+配置完毕后，重启集群：`./zkServer.sh restart`

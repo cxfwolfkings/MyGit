@@ -1,24 +1,69 @@
-# 微服务架构实战
+# 先导wifi网架构笔记
 
 先导项目管理系统架构：
 
-1. [负载均衡](#负载均衡)
-2. [服务注册中心](#服务注册中心)
-3. [API网关](#API网关)
-4. [SFTP安装](#SFTP安装)
-5. [部署前准备](#部署前准备)
-6. [压缩备份](#压缩备份)
-7. [镜像生成](#镜像生成)
-8. [部署前端应用](#部署前端应用)
-9. [部署后端微服务](#部署后端微服务)
-10. [外网服务器部署](#外网服务器部署)
+1. 安装部署
+2. 运维监控
+   - [rabbitmq](#rabbitmq)
+
+
+
+4. [配置网段](#配置网段)
+5. [负载均衡](#负载均衡)
+6. [服务注册中心](#服务注册中心)
+7. [API网关](#API网关)
+8. [SFTP安装](#SFTP安装)
+9. [部署前准备](#部署前准备)
+10. [压缩备份](#压缩备份)
+11. [复制环境](#复制环境)
+12. [镜像生成](#镜像生成)
+14. [Redis集群](#Redis集群)
+15. [部署前端应用](#部署前端应用)
+16. [部署后端微服务](#部署后端微服务)
+17. [Exceptionless](#Exceptionless)
+18. [外网服务器部署](#外网服务器部署)
     - [nginx安装](#nginx安装)
     - [nginx配置](#nginx配置)
-11. [一键部署](#一键部署)
-12. [消息队列](#消息队列)
+19. [一键部署](#一键部署)
+20. [消息队列](#消息队列)
     - [安装RabbitMQ](#安装RabbitMQ)
-13. [分布式日志平台](#分布式日志平台)
-14. [附录](#附录)
+21. [分布式日志平台](#分布式日志平台)
+22. [附录](#附录)
+
+
+
+## 运维监控
+
+
+
+### rabbitmq
+
+| url                         | user | pwd  |
+| --------------------------- | ---- | ---- |
+| http://10.30.202.101:15672/ | root | 123  |
+
+
+
+新安装的数据库，授予“远程登录”权限！
+
+
+
+## 配置网段
+
+docker配置网络时报错：user specified IP address is supported only when connec
+
+原因：只有使用`–subnet`创建的网络才能指定静态IP
+
+如下使用--subnet创建网络（用来指定ip段），--gateway（用来指定网关），lead_pm1为创建的名字
+
+```sh
+docker network create --driver bridge \
+                      --ip-range=172.18.1.0/24 \
+                      --subnet 172.18.1.0/24 \
+                      --gateway 172.18.1.1 lead_pm1
+```
+
+> 注意：IP范围：2~254
 
 
 
@@ -270,7 +315,7 @@ curl 172.22.0.4:80
 创建新网段：
 
 ```sh
-docker network create --driver bridge lead_department_photovoltaic
+docker network create --driver bridge lead_pm1
 ```
 
 启动Consul：
@@ -282,12 +327,12 @@ docker run -d \
 -p 8600:8600 \
 -h node1 \
 --name consul \
---net lead_department_photovoltaic \
+--net lead_pm1 \
 --restart=always \
 consul agent \
 -server \
 -bootstrap-expect=1 \
--node=node1 \
+-node=lead_pm1_consul \
 -rejoin \
 -client 0.0.0.0 \
 -advertise 192.168.99.100 \
@@ -300,15 +345,16 @@ consul agent \
 
 ```sh
 docker run -d \
--p 8501:8500 \
--p 8601:8600 \
---name department_photovoltaic_consul \
---net lead_department_photovoltaic \
+-p 8500:8500 \
+-p 8600:8600 \
+--name pm1_consul \
+--net lead_pm1 \
+--ip 172.18.1.2 \
 --restart=always \
 consul agent \
 -server \
 -bootstrap-expect=1 \
--node=department_photovoltaic_consul \
+-node=lead_pm1_consul \
 -rejoin \
 -client 0.0.0.0 \
 -ui
@@ -791,8 +837,8 @@ useradd -g sftp -s /sbin/nologin -M sftp
 passwd sftp
 输入密码
 # 建立目录
-mkdir -p /data/sftp/
-usermod -d /data/sftp sftp
+mkdir -p /data/sftp/mysftp
+usermod -d /data/sftp/mysftp sftp
 
 # 修改sshd_config
 vim /etc/ssh/sshd_config
@@ -801,19 +847,19 @@ vim /etc/ssh/sshd_config
 # 添加
 Subsystem sftp internal-sftp
 Match Group sftp
-ChrootDirectory /data/sftp
+ChrootDirectory /data/sftp/mysftp
 ForceCommand internal-sftp
 AllowTcpForwarding no
 X11Forwarding no
 
 # 设置Chroot目录权限
-chown root:sftp /data/sftp
-chmod 755 /data/sftp
+chown root:sftp /data/sftp/mysftp
+chmod 755 /data/sftp/mysftp
 
 # 设置可以写入的目录
-mkdir /data/sftp/upload
-chown sftp:sftp /data/sftp/upload
-chmod 755 /data/sftp/upload
+mkdir /data/sftp/mysftp/upload
+chown sftp:sftp /data/sftp/mysftp/upload
+chmod 755 /data/sftp/mysftp/upload
 
 # 关闭selinux：
 vim /etc/selinux/config
@@ -962,6 +1008,149 @@ zip -r backup.zip backup/
 rm -rf /data/sftp/mysftp/upload/backup
 # 压缩文件移动到父目录（最后没有/）
 mv ./backup20210209.zip /data/sftp/mysftp
+
+# 把文件解压到当前目录下
+unzip file.zip
+# 如果要把文件解压到指定的目录下，需要用到-d参数。
+unzip -d ./tmp/ file.zip
+# 解压的时候，有时候不想覆盖已经存在的文件，那么可以加上-n参数
+unzip -n file.zip
+unzip -n -d ./tmp/ file.zip
+# 只看一下zip压缩包中包含哪些文件，不进行解压缩
+unzip -l file.zip
+# 查看显示的文件列表还包含压缩比率
+unzip -v file.zip
+# 检查zip文件是否损坏
+unzip -t file.zip
+# 将压缩文件file.zip在指定目录tmp下解压缩，如果已有相同的文件存在，要求unzip命令覆盖原先的文件
+unzip -o file.zip -d ./tmp
+
+# 备份配置文件
+cp /root/ftp/gateway/appsettings.json /root/ftp/gateway/appsettings.json.bak
+cp /root/ftp/gateway/ocelot.json /root/ftp/gateway/ocelot.json.bak
+cp /root/ftp/jwtserver/appsettings.json /root/ftp/jwtserver/appsettings.json.bak
+cp /root/ftp/base/appsettings.json /root/ftp/base/appsettings.json.bak
+cp /root/ftp/basicdata/appsettings.json /root/ftp/basicdata/appsettings.json.bak
+cp /root/ftp/attence/appsettings.json /root/ftp/attence/appsettings.json.bak
+cp /root/ftp/pmjob/appsettings.json /root/ftp/pmjob/appsettings.json.bak
+cp /root/ftp/approve/appsettings.json /root/ftp/approve/appsettings.json.bak
+cp /root/ftp/opportunity/appsettings.json /root/ftp/opportunity/appsettings.json.bak
+```
+
+
+
+### 复制环境
+
+```sh
+cp -r /root/ftp/gateway /root/ftp/test/gateway
+cp -r /root/ftp/jwtserver /root/ftp/test/jwtserver
+
+echo y | cp /root/ftp/basicdata/appsettings.json /root/ftp/test/basicdata/appsettings.json
+echo y | cp /root/ftp/attence/appsettings.json /root/ftp/test/attence/appsettings.json
+echo y | cp /root/ftp/approve/appsettings.json /root/ftp/test/approve/appsettings.json
+echo y | cp /root/ftp/opportunity/appsettings.json /root/ftp/test/opportunity/appsettings.json
+
+vim /root/ftp/test/docker-compose.yml
+cd /root/ftp/test && docker-compose up -d && cd /root/ftp
+```
+
+consul
+
+```sh
+docker run -d \
+-p 9500:8500 \
+-p 9600:8600 \
+--name pm2_consul \
+--net lead_pm1 \
+--ip 172.18.1.51 \
+--restart=always \
+consul agent \
+-server \
+-bootstrap-expect=1 \
+-node=lead_pm2_consul \
+-rejoin \
+-client 0.0.0.0 \
+-ui
+```
+
+docker-compose.yml
+
+```yaml
+version: '3.7'
+
+services:
+  gateway:
+    container_name: pm2_gateway
+    image: gateway
+    privileged: true
+    hostname: gateway
+    ports:
+      - 6081:80
+    volumes:
+      - /root/ftp/test/gateway/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.52
+
+  jwtserver:
+    container_name: pm2_jwtserver
+    image: jwtserver
+    privileged: true
+    hostname: jwtserver
+    volumes:
+      - /root/ftp/test/jwtserver/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.53
+  
+  approve:
+    container_name: pm2_approve
+    image: approve
+    privileged: true
+    hostname: approve
+    volumes:
+      - /root/ftp/test/approve/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.54
+
+  attence:
+    container_name: pm2_attence
+    image: attence
+    privileged: true
+    hostname: attence
+    volumes:
+      - /root/ftp/test/attence/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.55
+
+  basicdata:
+    container_name: pm2_basicdata
+    image: basicdata
+    privileged: true
+    hostname: basicdata
+    volumes:
+      - /root/ftp/test/basicdata/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.56
+
+  opportunity:
+    container_name: pm2_opportunity
+    image: opportunity
+    privileged: true
+    hostname: opportunity
+    volumes:
+      - /root/ftp/test/opportunity/:/app
+    networks:
+      default:
+        ipv4_address: 172.18.1.57
+
+networks:
+  default:
+    external:
+      name: lead_pm1
 ```
 
 
@@ -1020,7 +1209,7 @@ RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shang
 ENTRYPOINT ["dotnet", "LeadChina.JwtServer.dll"]
 ```
 
-系统设置微服务：
+基础配置微服务：
 
 ```Dockerfile
 FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-stretch-slim AS base
@@ -1036,6 +1225,15 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-stretch-slim AS base
 WORKDIR /app
 RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
 ENTRYPOINT ["dotnet", "LeadChina.Base.API.dll"]
+```
+
+考勤微服务：
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-stretch-slim AS base
+WORKDIR /app
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+ENTRYPOINT ["dotnet", "LeadChina.Attend.API.dll"]
 ```
 
 项目微服务：
@@ -1074,6 +1272,33 @@ RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shang
 ENTRYPOINT ["dotnet", "LeadChina.PM.Document.API.dll"]
 ```
 
+商机微服务
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.0 AS runtime
+WORKDIR /app
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+ENTRYPOINT ["dotnet", "LeadChina.Opportunity.API.dll"]
+```
+
+审批通用服务：
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+WORKDIR /app
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+ENTRYPOINT ["dotnet", "LeadChina.Approve.RpcService.dll"]
+```
+
+定时任务微服务：
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.1-stretch-slim AS base
+WORKDIR /app
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
+ENTRYPOINT ["dotnet", "LeadChina.Attend.Job.dll"]
+```
+
 生成镜像：
 
 ```sh
@@ -1082,20 +1307,28 @@ cd /data/sftp/mysftp/upload/pmweb/
 docker build -t pmweb .
 
 # 网关
-cd /data/sftp/mysftp/upload/gateway/
+cd /root/ftp/gateway
 docker build -t gateway .
 
 # 认证服务器
-cd /data/sftp/mysftp/upload/JwtServer/
+cd /root/ftp/jwtserver
 docker build -t jwtserver .
 
-# 系统设置微服务
-cd /data/sftp/mysftp/upload/setting/SysSetting/
-docker build -t pmsetting .
-
 # 基础数据微服务
-cd /data/sftp/mysftp/upload/base
-docker build -t basic .
+cd /root/ftp/base
+docker build -t base .
+
+# 基础配置微服务
+cd /root/ftp/basicdata
+docker build -t basicdata .
+
+# 考勤微服务
+cd /root/ftp/attence
+docker build -t attence .
+
+# 商机微服务
+cd /root/ftp/opportunity
+docker build -t opportunity .
 
 # 项目微服务
 cd /data/sftp/mysftp/upload/project
@@ -1116,7 +1349,152 @@ docker build -t document .
 # 报表微服务
 cd /data/sftp/mysftp/pv_upload/Report
 docker build -t pv-report .
+
+# 通用审批微服务
+cd /root/ftp/approve
+docker build -t approve .
+
+# 定时任务
+cd /root/ftp/pmjob
+docker build -t pmjob .
 ```
+
+
+
+## Redis集群
+
+**单体搭建：**
+
+```sh
+docker run --net lead_pm1 --ip 172.18.1.211 -itd --name pm2-redis -p 6380:6379 redis
+```
+
+**集群搭建：**
+
+数据目录创建：
+
+```sh
+mkdir /data/redis/700{1..6}/data -p
+```
+
+docker-compose.yml
+
+```yaml
+version: '3.7'
+
+services:
+ redis1:
+  container_name: pm1_redis1
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7001:7001
+  restart: always
+  volumes:
+   - /data/redis/7001/data:/data
+  environment:
+   - REDIS_PORT=7001
+  networks:
+    default:
+      ipv4_address: 172.18.1.221
+
+ redis2:
+  container_name: pm1_redis2
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7002:7002
+  restart: always
+  volumes:
+   - /data/redis/7002/data:/data
+  environment:
+   - REDIS_PORT=7002
+  networks:
+    default:
+      ipv4_address: 172.18.1.222
+
+ redis3:
+  container_name: pm1_redis3
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7003:7003
+  restart: always
+  volumes:
+   - /data/redis/7003/data:/data
+  environment:
+   - REDIS_PORT=7003
+  networks:
+    default:
+      ipv4_address: 172.18.1.223
+
+ redis4:
+  container_name: pm1_redis4
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7004:7004
+  restart: always
+  volumes:
+   - /data/redis/7004/data:/data
+  environment:
+   - REDIS_PORT=7004
+  networks:
+    default:
+      ipv4_address: 172.18.1.224
+
+ redis5:
+  container_name: pm1_redis5
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7005:7005
+  restart: always
+  volumes:
+   - /data/redis/7005/data:/data
+  environment:
+   - REDIS_PORT=7005
+  networks:
+    default:
+      ipv4_address: 172.18.1.225
+
+ redis6:
+  container_name: pm1_redis6
+  image: publicisworldwide/redis-cluster
+  ports:
+   - 7006:7006
+  restart: always
+  volumes:
+   - /data/redis/7006/data:/data
+  environment:
+   - REDIS_PORT=7006
+  networks:
+    default:
+      ipv4_address: 172.18.1.226
+   
+networks:
+  default:
+    external:
+      name: lead_pm1
+```
+
+启动容器：
+
+```sh
+docker-compose up -d
+# 查看
+docker-compose ps
+```
+
+集群配置：
+
+```sh
+# 进入一个redis容器
+docker exec -ti pm1_redis1 bash
+# 执行命令（IP替换成自己宿主机的IP）
+redis-cli --cluster create 172.18.1.101:7001 172.18.1.102:7002 172.18.1.103:7003 172.18.1.104:7004 172.18.1.105:7005 172.18.1.106:7006 --cluster-replicas 1
+# 集群状态
+redis-cli -p 7001 cluster info
+# 集群节点信息
+redis-cli -p 7001 cluster nodes
+```
+
+
 
 ### 部署前端应用
 
@@ -1124,6 +1502,8 @@ docker build -t pv-report .
 # 启动前端
 docker run -d -p 6100:6100 -v /data/sftp/mysftp/upload/pmweb/:/app --name pmweb pmweb
 ```
+
+
 
 ### 部署后端微服务
 
@@ -1208,6 +1588,25 @@ docker cp ../usr/share/zoneinfo/Asia/Shanghai department_photovoltaic_report:/et
 ```
 
 **注意：**上面的目录大小写是敏感的！
+
+
+
+## Exceptionless
+
+```sh
+# 测试环境
+docker run --rm -it -d -p 5000:80 \
+    -v /data/esdata:/usr/share/elasticsearch/data \
+    --name exceptionless \
+    --net lead_pm1 \
+    --ip 172.18.1.90 \
+    exceptionless/exceptionless:latest
+
+# 生产环境
+unzipExceptionless-7.0.9.zip
+cd Exceptionless-7.0.9
+docker-compose up -d
+```
 
 
 
@@ -1336,7 +1735,7 @@ version: '3.7'
 
 services:
   gateway:
-    name: gateway
+    container_name: gateway
     image: gateway
     privileged: true
     hostname: gateway
@@ -1349,7 +1748,7 @@ services:
         ipv4_address: 172.20.0.3
 
   auth:
-    name: auth
+    container_name: auth
     image: jwtserver
     privileged: true
     hostname: auth
@@ -1362,7 +1761,7 @@ services:
         ipv4_address: 172.20.0.4
 
   setting:
-    name: setting
+    container_name: setting
     image: pmsetting
     privileged: true
     hostname: setting
@@ -1375,7 +1774,7 @@ services:
         ipv4_address: 172.20.0.5
 
   base:
-    name: base
+    container_name: base
     image: basic
     privileged: true
     hostname: base
@@ -1388,7 +1787,7 @@ services:
         ipv4_address: 172.20.0.6
 
   project:
-    name: project
+    container_name: project
     image: project
     privileged: true
     hostname: project
@@ -1401,7 +1800,7 @@ services:
         ipv4_address: 172.20.0.7
 
   task:
-    name: task
+    container_name: task
     image: task
     privileged: true
     hostname: task
@@ -1414,7 +1813,7 @@ services:
         ipv4_address: 172.20.0.8
 
   message:
-    name: message
+    container_name: message
     image: message
     privileged: true
     hostname: message
@@ -1427,7 +1826,7 @@ services:
         ipv4_address: 172.20.0.9
 
   document:
-    name: document
+    container_name: document
     image: document
     privileged: true
     hostname: document
@@ -1440,7 +1839,7 @@ services:
         ipv4_address: 172.20.0.10
 
   suggestion:
-    name: suggestion
+    container_name: suggestion
     image: suggestion
     privileged: true
     hostname: suggestion
@@ -1453,7 +1852,7 @@ services:
         ipv4_address: 172.20.0.11
 
   report:
-    name: report
+    container_name: report
     image: report
     privileged: true
     hostname: report
@@ -1466,7 +1865,7 @@ services:
         ipv4_address: 172.20.0.12
 
   performance:
-    name: performance
+    container_name: performance
     image: performance
     privileged: true
     hostname: performance
@@ -1479,7 +1878,7 @@ services:
         ipv4_address: 172.20.0.13
 
   attend:
-    name: attend
+    container_name: attend
     image: attend
     privileged: true
     hostname: attend
@@ -1492,7 +1891,7 @@ services:
         ipv4_address: 172.20.0.14
 
   general:
-    name: general
+    container_name: general
     image: general
     privileged: true
     hostname: general

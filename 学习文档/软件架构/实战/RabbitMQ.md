@@ -31,13 +31,20 @@ Web 控制台：http://127.0.0.1:15672/#/，以 guest / guest 登录。支持交
 
 ## 集群部署
 
+部署目标
+
+|       | IP         | 名称    | 存储方式 | 说明 |
+| ----- | ---------- | ------- | -------- | ---- |
+| 节点1 | 172.19.0.2 | rabbit1 | disk     | 主   |
+| 节点2 | 172.19.0.3 | rabbit2 | ram      | 从   |
+| 节点3 | 172.19.0.4 | rabbit3 | ram      | 从   |
+
 创建映射目录
 
 ```sh
 mkdir -p /data/rabbit/1/data /data/rabbit/1/config \
          /data/rabbit/2/data /data/rabbit/2/config \
-         /data/rabbit/3/data /data/rabbit/3/config \
-         /data/rabbit/hosts
+         /data/rabbit/3/data /data/rabbit/3/config
 ```
 
 **docker-compose方式**
@@ -50,7 +57,7 @@ version: '3.7'
 services:
   rabbit1:
     container_name: rabbit1
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit1
     environment:
@@ -69,13 +76,13 @@ services:
       - /data/rabbit/1/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.2
       
       
   rabbit2:
     container_name: rabbit2
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit2
     environment:
@@ -83,23 +90,23 @@ services:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=123
     ports:
-      - "4369:4369"
-      - "5671:5671"
-      - "5672:5672"
-      - "15671:15671"
-      - "15672:15672"
-      - "25672:25672"
+      - "4379:4369"
+      - "5681:5671"
+      - "5682:5672"
+      - "15681:15671"
+      - "15682:15672"
+      - "25682:25672"
     volumes:
       - /data/rabbit/2/data:/var/lib/rabbitmq
       - /data/rabbit/2/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.3
         
   rabbit3:
     container_name: rabbit3
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit3
     environment:
@@ -107,34 +114,61 @@ services:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=123
     ports:
-      - "4369:4369"
-      - "5671:5671"
-      - "5672:5672"
-      - "15671:15671"
-      - "15672:15672"
-      - "25672:25672"
+      - "4389:4369"
+      - "5691:5671"
+      - "5692:5672"
+      - "15691:15671"
+      - "15692:15672"
+      - "25692:25672"
     volumes:
       - /data/rabbit/3/data:/var/lib/rabbitmq
       - /data/rabbit/3/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.4
       
 networks:
-   extnetwork:
-      ipam:
-         config:
-         - subnet: 172.19.0.0/24
-           gateway: 172.19.0.1
+  lead:
+    ipam:
+      config:
+      - subnet: 172.19.0.0/24
 ```
 
-在 /etc/hosts 文件中，添加各节点的信息
+自定义网路名称：`<rootDirName>_lead`
+
+在 /data/rabbit/hosts 文件中，添加各节点的信息
 
 ```sh
 172.19.0.2 rabbit1
 172.19.0.3 rabbit2
 172.19.0.4 rabbit3
+```
+
+启动容器
+
+```sh
+docker-compose up -d
+```
+
+执行集群命令：
+
+```sh
+# 事先规划好了各节点rabbitmq的存储方式，即节点1是disk，节点2和节点3都是ram
+docker exec -it rabbit1 /bin/bash
+# disk节点（节点1主节点）执行
+rabbitmqctl stop_app
+rabbitmqctl reset
+rabbitmqctl start_app
+# ram节点（节点2和节点3）执行：
+rabbitmqctl stop_app
+rabbitmqctl reset
+rabbitmqctl join_cluster --ram rabbit@rabbit1
+rabbitmqctl start_app
+# 如果后期需要修改节点的存储方式可以使用：
+rabbitmqctl change_cluster_node_type disc/ram  # 更改节点为磁盘或内存节点
+# 查看哪些是disk nodes，哪些是ram nodes，正在运行的节点，各节点的版本信息等等
+rabbitmqctl cluster_status
 ```
 
 参考：
@@ -515,6 +549,8 @@ kubectl get svc
 
 
 ## 管理
+
+Web控制台地址：http://0.0.0.0:15672/，默认账号：guest / guest（此文档compose安装时指定了 root / 123）
 
 通过 Web 控制台，创建虚拟主机 `hello`，供后续示例使用。
 

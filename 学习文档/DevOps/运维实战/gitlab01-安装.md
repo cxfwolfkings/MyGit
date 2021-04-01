@@ -273,8 +273,9 @@ sudo gitlab-ctl start
 
 # 设置SSH
 # 在Git Bash中生成新key(RSA)：
+ssh-keygen -t rsa -C "xiaofeng.chen@leadchina.cn"
 ssh-keygen -o -t rsa -b 4096 -C "colin.chen@softtek.com"
-# 添加或更改密码：ssh-keygen -p -o -f <keyname>
+# 添加或更改密码：ssh-keygen -p -o -f <keyPath>
 # 接下来将SSH密钥添加到GitLab帐户
 # 在Git Bash中查看密钥(RSA)并复制：
 cat ~/.ssh/id_rsa.pub | clip
