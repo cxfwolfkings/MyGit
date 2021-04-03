@@ -12,22 +12,15 @@
    - [循环语句](#循环语句)
    - [样式绑定](#样式绑定)
    - [事件处理](#事件处理)
-<<<<<<< HEAD
-=======
    - [生命周期事件](#生命周期事件)
    - [表单](#表单)
->>>>>>> ad69cc74ff822fc2b18887b069cfb6b2b5356e88
    - [内容分发](#内容分发)
    - [动画](#动画)
    - [混入](#混入)
 2. 实战
-<<<<<<< HEAD
-   - [事件总线](#事件总线)
-=======
    - [vue-resource](#vue-resource)
    - [axios](#axios)
    - [vue-router](#vue-router)
->>>>>>> ad69cc74ff822fc2b18887b069cfb6b2b5356e88
    - [i18n](#i18n)
    - [wappalyzer](#wappalyzer)
    - [Vuex](#Vuex)
@@ -763,8 +756,6 @@ var app = new Vue({
 ```
 
 
-<<<<<<< HEAD
-=======
 每个 Vue 实例创建时，都会经历一系列的初始化过程，同时也会调用相应的生命周期钩子，我们可以利用这些钩子，在合适的时机执行我们的业务逻辑。比较常用的有：
 
 - **created**：实例创建完成后调用，此阶段完成了数据的观测等，但尚未挂载，`$el` 还不可用。需要初始化处理一些数据时会比较有用
@@ -862,7 +853,6 @@ export default {
 在这个示例中，我们监听了"blur", "change"事件，如果输入字符不满足要求，会给出提示！
 
 
->>>>>>> ad69cc74ff822fc2b18887b069cfb6b2b5356e88
 
 ### 内容分发
 
@@ -1373,8 +1363,6 @@ new Vue({
 
 ## 实战
 
-<<<<<<< HEAD
-=======
 ### vue-resource
 
 vue中的`$http`服务，需要引入一个叫`vue-resource.js`的文件，因为vue.js中没有`$http`服务。
@@ -2558,7 +2546,6 @@ export default router
 
 [Feature request: replace routes dynamically #1234](https://github.com/vuejs/vue-router/issues/1234)
 
->>>>>>> ad69cc74ff822fc2b18887b069cfb6b2b5356e88
 
 
 ### i18n
