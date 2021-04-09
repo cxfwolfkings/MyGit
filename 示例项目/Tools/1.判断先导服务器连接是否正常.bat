@@ -11,4 +11,6 @@ ping -n 1 10.30.100.105 > nul
 if errorlevel 1 (echo 105连接异常) else (echo 105连接正常)
 ping -n 1 10.30.100.106 > nul
 if errorlevel 1 (echo 106连接异常) else (echo 106连接正常)
+ping -n 1 10.30.100.107 > nul
+if errorlevel 1 (echo 107连接异常) else (echo 107连接正常)
 pause

@@ -2,7 +2,7 @@
 
 1. 安装
 2. 集群部署
-3. 管理
+3. [管理](#管理)
 4. 编程
 
 
@@ -612,6 +612,34 @@ curl -u guest:guest http://127.0.0.1:15672/api/queues/hello/queue_1/bindings
 curl -u guest:guest -XDELETE http://127.0.0.1:15672/api/bindings/hello/e/exchange_1/q/queue_1/B
 ```
 
+**技术术语：**
+
+- Broker：简单来说就是消息队列服务器实体。
+
+- producer：消息生产者，就是投递消息的程序。
+
+- consumer：消息消费者，就是接受消息的程序。
+
+- vhost：虚拟主机，一个broker里可以开设多个vhost，用作权限分离，把不同的系统使用的rabbitmq区分开，共用一个消息队列服务器，但看上去就像各自在用不用的rabbitmq服务器一样。
+
+- Connection：一个网络连接，比如TCP/IP套接字连接。
+
+- channel：消息通道，是建立在真实的TCP连接内的虚拟连接（是我们与RabbitMQ打交道的最重要的一个接口）。仅仅创建了客户端到Broker之间的连接后，客户端还是不能发送消息的，需要为每一个Connection创建Channel，AMQP协议规定只有通过Channel才能执行AMQP的命令。AMQP的命令都是通过信道发送出去的（我们大部分的业务操作是在Channel这个接口中完成的，包括定义Queue、定义Exchange、绑定Queue与Exchange、发布消息等）。每条信道都会被指派一个唯一ID。在客户端的每个连接里，可建立多个channel，每个channel代表一个会话任务，理论上无限制，减少TCP创建和销毁的开销，实现共用TCP的效果。之所以需要Channel，是因为TCP连接的建立和释放都是十分昂贵的，如果一个客户端每一个线程都需要与Broker交互，如果每一个线程都建立一个TCP连接，暂且不考虑TCP连接是否浪费，就算操作系统也无法承受每秒建立如此多的TCP连接。
+
+  > 注1：一个生产者或一个消费者与MQ服务器之间只有一条TCP连接 
+  >
+  > 注2：RabbitMQ建议客户端线程之间不要共用Channel，至少要保证共用Channel的线程发送消息必须是串行的，但是建议尽量共用Connection。
+
+- Exchange：消息交换机，生产者不是直接将消息投递到Queue中的，实际上是生产者将消息发送到Exchange，由Exchange将消息路由到一个或多个Queue中（或者丢弃）。
+
+- Exchange Types RabbitMQ常用的Exchange Type有fanout、direct、topic、headers这四种（AMQP规范里还提到两种Exchange Type，分别为system与自定义，这里不予以描述），之后会分别进行介绍。
+- Queue：消息队列载体，每个消息都会被投入到一个或多个队列。
+- Binding：绑定，它的作用就是把exchange和queue按照路由规则绑定起来，这样RabbitMQ就知道如何正确地将消息路由到指定的Queue了。
+
+参考：
+
+- https://blog.csdn.net/mingongge/article/details/99512557
+
 
 
 ## 编程
@@ -824,3 +852,4 @@ channel.basicPublish("exchange_1", "C", true, MessageProperties.PERSISTENT_TEXT_
 - https://gitbook.cn/gitchat/activity/5cfcd4255656b03562c9166d
 - https://gitbook.cn/gitchat/activity/5f71a7c03334370f1f80e223
 - https://gitbook.cn/gitchat/activity/5b18f8fe02fa96300bc92dd4
+- [官网](https://www.rabbitmq.com/documentation.html)

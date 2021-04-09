@@ -1,4 +1,4 @@
-# Apollo
+# Apollo部署
 
 
 
@@ -9,7 +9,9 @@
 首先部署mysql，创建用户并设置密码，这里是`root`/`123`
 
 ```sh
-mkdir -p /data/mysql/1/data /data/mysql/1/conf /data/mysql/1/logs /data/apollo/logs
+mkdir -p /data/mysql/1/data /data/mysql/1/conf /data/mysql/1/logs \
+         /data/mysql/2/data /data/mysql/2/conf /data/mysql/2/logs \
+         /data/apollo/1/logs /data/apollo/2/logs
 vim /data/mysql/docker-compose.yml
 ```
 
@@ -19,9 +21,9 @@ mysql 的 docker-compose.yml
 version: '3.7'
 
 services:
-  mysql:
+  mysql1:
     image: mysql
-    container_name: mysql
+    container_name: mysql1
     command:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
@@ -39,6 +41,27 @@ services:
     networks:
       default:
         ipv4_address: 172.18.1.100
+
+mysql2:
+    image: mysql
+    container_name: mysql2
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --lower_case_table_names=1
+    restart: unless-stopped # docker的重启策略：在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器
+    environment:
+      MYSQL_ROOT_PASSWORD: 123 # root用户的密码
+    ports:
+      - 3307:3306
+    volumes:
+      - /data/mysql/2/data:/var/lib/mysql
+      - /data/mysql/2/conf:/etc/mysql/conf.d
+      - /data/mysql/2/logs:/logs
+    networks:
+      default:
+        ipv4_address: 172.18.1.101
 
 networks:
   default:
@@ -63,32 +86,33 @@ apollo 的 docker-compose.yaml
 version: '3.7'
 
 services:
-  apollo-configservice:
-    container_name: apollo-configservice
+  apollo-configservice1:
+    container_name: apollo-configservice1
     image: apolloconfig/apollo-configservice
     volumes:
       - type: volume
-        source: logs
+        source: logs1
         target: /opt/logs
     ports:
       - 8081:8080
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloConfigDB?characterEncoding=utf
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloConfigDB?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://172.18.1.2:8080
     restart: always
     networks:
       default:
         ipv4_address: 172.18.1.2
 
-  apollo-adminservice:
+  apollo-adminservice1:
     depends_on:
-      - apollo-configservice
-    container_name: apollo-adminservice
+      - apollo-configservice1
+    container_name: apollo-adminservice1
     image: apolloconfig/apollo-adminservice
     volumes:
       - type: volume
-        source: logs
+        source: logs1
         target: /opt/logs
     ports:
       - 8082:8090
@@ -96,6 +120,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloConfigDB?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://172.18.1.2:8080
     restart: always
     networks:
       default:
@@ -103,33 +128,80 @@ services:
 
   apollo-portal:
     depends_on:
-      - apollo-adminservice
+      - apollo-adminservice1
+      - apollo-adminservice2
     container_name: apollo-portal
     image: apolloconfig/apollo-portal
     volumes:
       - type: volume
-        source: logs
+        source: logs1
         target: /opt/logs
     ports:
       - 8083:8070
     environment:  
-      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloPortalDB?characterEncoding=utf8mb4
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.100:3306/ApolloPortalDB?characterEncoding=utf8
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=123
-      - APOLLO_PORTAL_ENVS=dev
-      - DEV_META=http://172.18.1.2:8080
+      - APOLLO_PORTAL_ENVS=PRO
+      - PRO_META=http://172.18.1.2:8080
     restart: always
     networks:
       default:
         ipv4_address: 172.18.1.4
 
+  apollo-configservice2:
+    container_name: apollo-configservice2
+    image: apolloconfig/apollo-configservice
+    volumes:
+      - type: volume
+        source: logs2
+        target: /opt/logs
+    ports:
+      - 8084:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.101:3306/ApolloConfigDB?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://172.18.1.5:8080
+    restart: always
+    networks:
+      default:
+        ipv4_address: 172.18.1.5
+
+  apollo-adminservice2:
+    depends_on:
+      - apollo-configservice2
+    container_name: apollo-adminservice2
+    image: apolloconfig/apollo-adminservice
+    volumes:
+      - type: volume
+        source: logs2
+        target: /opt/logs
+    ports:
+      - 8085:8090
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://172.18.1.101:3306/ApolloConfigDB?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://172.18.1.5:8080
+    restart: always
+    networks:
+      default:
+        ipv4_address: 172.18.1.6
+
 volumes:
-  logs:
+  logs1:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /data/apollo/logs
+      device: /data/apollo/1/logs
+  logs2:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/apollo/2/logs
       
 networks:
   default:
@@ -155,6 +227,8 @@ docker-compose ps
 ```
 
 访问web界面：http://0.0.0.0:8083/，默认账户密码是 `apollo / admin`。
+
+Eureka地址（内嵌在configservice容器中）：http://0.0.0.0:8081
 
 
 
@@ -467,6 +541,8 @@ helm install -f apollo-portal-values.yaml apollo-portal apollo/apollo-portal -n 
 这里将 apollo-portal 部署到单独的一个 namespace 中。
 
 **参考文档**
+
+- [官方文档](https://ctripcorp.github.io/apollo/#/zh/README)
 
 - [Apollo配置中心设计](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fctripcorp%2Fapollo%2Fwiki%2FApollo%E9%85%8D%E7%BD%AE%E4%B8%AD%E5%BF%83%E8%AE%BE%E8%AE%A1)
 - [基于Kubernetes原生服务发现](https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fctripcorp%2Fapollo%2Fwiki%2F%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97%2324-kubernetes%E9%83%A8%E7%BD%B2)
