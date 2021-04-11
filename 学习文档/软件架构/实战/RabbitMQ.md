@@ -2,7 +2,7 @@
 
 1. 安装
 2. 集群部署
-3. 管理
+3. [管理](#管理)
 4. 编程
 
 
@@ -31,13 +31,20 @@ Web 控制台：http://127.0.0.1:15672/#/，以 guest / guest 登录。支持交
 
 ## 集群部署
 
+部署目标
+
+|       | IP         | 名称    | 存储方式 | 说明 |
+| ----- | ---------- | ------- | -------- | ---- |
+| 节点1 | 172.19.0.2 | rabbit1 | disk     | 主   |
+| 节点2 | 172.19.0.3 | rabbit2 | ram      | 从   |
+| 节点3 | 172.19.0.4 | rabbit3 | ram      | 从   |
+
 创建映射目录
 
 ```sh
 mkdir -p /data/rabbit/1/data /data/rabbit/1/config \
          /data/rabbit/2/data /data/rabbit/2/config \
-         /data/rabbit/3/data /data/rabbit/3/config \
-         /data/rabbit/hosts
+         /data/rabbit/3/data /data/rabbit/3/config
 ```
 
 **docker-compose方式**
@@ -50,7 +57,7 @@ version: '3.7'
 services:
   rabbit1:
     container_name: rabbit1
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit1
     environment:
@@ -69,13 +76,13 @@ services:
       - /data/rabbit/1/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.2
       
       
   rabbit2:
     container_name: rabbit2
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit2
     environment:
@@ -83,23 +90,23 @@ services:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=123
     ports:
-      - "4369:4369"
-      - "5671:5671"
-      - "5672:5672"
-      - "15671:15671"
-      - "15672:15672"
-      - "25672:25672"
+      - "4379:4369"
+      - "5681:5671"
+      - "5682:5672"
+      - "15681:15671"
+      - "15682:15672"
+      - "25682:25672"
     volumes:
       - /data/rabbit/2/data:/var/lib/rabbitmq
       - /data/rabbit/2/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.3
         
   rabbit3:
     container_name: rabbit3
-    image: rabbitmq:3.7-management-alpine
+    image: rabbitmq:management
     restart: always
     hostname: rabbit3
     environment:
@@ -107,34 +114,61 @@ services:
       - RABBITMQ_DEFAULT_USER=root
       - RABBITMQ_DEFAULT_PASS=123
     ports:
-      - "4369:4369"
-      - "5671:5671"
-      - "5672:5672"
-      - "15671:15671"
-      - "15672:15672"
-      - "25672:25672"
+      - "4389:4369"
+      - "5691:5671"
+      - "5692:5672"
+      - "15691:15671"
+      - "15692:15672"
+      - "25692:25672"
     volumes:
       - /data/rabbit/3/data:/var/lib/rabbitmq
       - /data/rabbit/3/config/rabbitmq.sh:/etc/rabbitmq/rabbitmq.sh
       - /data/rabbit/hosts:/etc/hosts
     networks:
-      extnetwork:
+      lead:
         ipv4_address: 172.19.0.4
       
 networks:
-   extnetwork:
-      ipam:
-         config:
-         - subnet: 172.19.0.0/24
-           gateway: 172.19.0.1
+  lead:
+    ipam:
+      config:
+      - subnet: 172.19.0.0/24
 ```
 
-在 /etc/hosts 文件中，添加各节点的信息
+自定义网路名称：`<rootDirName>_lead`
+
+在 /data/rabbit/hosts 文件中，添加各节点的信息
 
 ```sh
 172.19.0.2 rabbit1
 172.19.0.3 rabbit2
 172.19.0.4 rabbit3
+```
+
+启动容器
+
+```sh
+docker-compose up -d
+```
+
+执行集群命令：
+
+```sh
+# 事先规划好了各节点rabbitmq的存储方式，即节点1是disk，节点2和节点3都是ram
+docker exec -it rabbit1 /bin/bash
+# disk节点（节点1主节点）执行
+rabbitmqctl stop_app
+rabbitmqctl reset
+rabbitmqctl start_app
+# ram节点（节点2和节点3）执行：
+rabbitmqctl stop_app
+rabbitmqctl reset
+rabbitmqctl join_cluster --ram rabbit@rabbit1
+rabbitmqctl start_app
+# 如果后期需要修改节点的存储方式可以使用：
+rabbitmqctl change_cluster_node_type disc/ram  # 更改节点为磁盘或内存节点
+# 查看哪些是disk nodes，哪些是ram nodes，正在运行的节点，各节点的版本信息等等
+rabbitmqctl cluster_status
 ```
 
 参考：
@@ -516,6 +550,8 @@ kubectl get svc
 
 ## 管理
 
+Web控制台地址：http://0.0.0.0:15672/，默认账号：guest / guest（此文档compose安装时指定了 root / 123）
+
 通过 Web 控制台，创建虚拟主机 `hello`，供后续示例使用。
 
 ```sh
@@ -575,6 +611,34 @@ curl -u guest:guest http://127.0.0.1:15672/api/queues/hello/queue_1/bindings
 # 若成功删除，HTTP 返回码：204
 curl -u guest:guest -XDELETE http://127.0.0.1:15672/api/bindings/hello/e/exchange_1/q/queue_1/B
 ```
+
+**技术术语：**
+
+- Broker：简单来说就是消息队列服务器实体。
+
+- producer：消息生产者，就是投递消息的程序。
+
+- consumer：消息消费者，就是接受消息的程序。
+
+- vhost：虚拟主机，一个broker里可以开设多个vhost，用作权限分离，把不同的系统使用的rabbitmq区分开，共用一个消息队列服务器，但看上去就像各自在用不用的rabbitmq服务器一样。
+
+- Connection：一个网络连接，比如TCP/IP套接字连接。
+
+- channel：消息通道，是建立在真实的TCP连接内的虚拟连接（是我们与RabbitMQ打交道的最重要的一个接口）。仅仅创建了客户端到Broker之间的连接后，客户端还是不能发送消息的，需要为每一个Connection创建Channel，AMQP协议规定只有通过Channel才能执行AMQP的命令。AMQP的命令都是通过信道发送出去的（我们大部分的业务操作是在Channel这个接口中完成的，包括定义Queue、定义Exchange、绑定Queue与Exchange、发布消息等）。每条信道都会被指派一个唯一ID。在客户端的每个连接里，可建立多个channel，每个channel代表一个会话任务，理论上无限制，减少TCP创建和销毁的开销，实现共用TCP的效果。之所以需要Channel，是因为TCP连接的建立和释放都是十分昂贵的，如果一个客户端每一个线程都需要与Broker交互，如果每一个线程都建立一个TCP连接，暂且不考虑TCP连接是否浪费，就算操作系统也无法承受每秒建立如此多的TCP连接。
+
+  > 注1：一个生产者或一个消费者与MQ服务器之间只有一条TCP连接 
+  >
+  > 注2：RabbitMQ建议客户端线程之间不要共用Channel，至少要保证共用Channel的线程发送消息必须是串行的，但是建议尽量共用Connection。
+
+- Exchange：消息交换机，生产者不是直接将消息投递到Queue中的，实际上是生产者将消息发送到Exchange，由Exchange将消息路由到一个或多个Queue中（或者丢弃）。
+
+- Exchange Types RabbitMQ常用的Exchange Type有fanout、direct、topic、headers这四种（AMQP规范里还提到两种Exchange Type，分别为system与自定义，这里不予以描述），之后会分别进行介绍。
+- Queue：消息队列载体，每个消息都会被投入到一个或多个队列。
+- Binding：绑定，它的作用就是把exchange和queue按照路由规则绑定起来，这样RabbitMQ就知道如何正确地将消息路由到指定的Queue了。
+
+参考：
+
+- https://blog.csdn.net/mingongge/article/details/99512557
 
 
 
@@ -788,3 +852,4 @@ channel.basicPublish("exchange_1", "C", true, MessageProperties.PERSISTENT_TEXT_
 - https://gitbook.cn/gitchat/activity/5cfcd4255656b03562c9166d
 - https://gitbook.cn/gitchat/activity/5f71a7c03334370f1f80e223
 - https://gitbook.cn/gitchat/activity/5b18f8fe02fa96300bc92dd4
+- [官网](https://www.rabbitmq.com/documentation.html)
