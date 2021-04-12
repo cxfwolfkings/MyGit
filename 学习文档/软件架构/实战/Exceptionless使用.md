@@ -1,5 +1,11 @@
 # Exceptionless
 
+1. 部署
+
+
+
+## 部署
+
 单容器：
 
 ```sh
@@ -32,6 +38,15 @@ mkdir -p /data/exceptionless/appdata \
 
 # 启动
 docker-compose up -d
+
+# 内网部署时前端管理界面无法加载在线资源
+# 先将容器内文件拷贝出来
+docker cp exceptionless-709_ui_1:/app /data/exceptionless
+# 目录改名
+mv /data/exceptionless/app /data/exceptionless/ui
+# 修改 index.html，将在线资源修改为本地资源（先从外网下载，再导入内网）
+# 设置执行权限
+chmod 755 index.html
 ```
 
 docker-compose.yml

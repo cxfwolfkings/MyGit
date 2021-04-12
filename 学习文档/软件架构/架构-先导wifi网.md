@@ -20,7 +20,6 @@
 14. [Redis集群](#Redis集群)
 15. [部署前端应用](#部署前端应用)
 16. [部署后端微服务](#部署后端微服务)
-17. [Exceptionless](#Exceptionless)
 18. [外网服务器部署](#外网服务器部署)
     - [nginx安装](#nginx安装)
     - [nginx配置](#nginx配置)
@@ -1588,25 +1587,6 @@ docker cp ../usr/share/zoneinfo/Asia/Shanghai department_photovoltaic_report:/et
 ```
 
 **注意：**上面的目录大小写是敏感的！
-
-
-
-## Exceptionless
-
-```sh
-# 测试环境
-docker run --rm -it -d -p 5000:80 \
-    -v /data/esdata:/usr/share/elasticsearch/data \
-    --name exceptionless \
-    --net lead_pm1 \
-    --ip 172.18.1.90 \
-    exceptionless/exceptionless:latest
-
-# 生产环境
-unzipExceptionless-7.0.9.zip
-cd Exceptionless-7.0.9
-docker-compose up -d
-```
 
 
 
