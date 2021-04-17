@@ -1,4 +1,4 @@
-# RabbitMQ
+# RabbitMQ部署
 
 1. 安装
 2. 集群部署

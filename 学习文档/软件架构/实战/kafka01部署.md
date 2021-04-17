@@ -1,4 +1,4 @@
-# Kafka
+# Kafka部署
 
 准备工作：
 
@@ -253,6 +253,10 @@ kafka-console-consumer.sh --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092
 
 # 查询集群描述
 kafka-topics.sh --describe --zookeeper zoo1:2181
+# 查看topic消息
+kafka-console-consumer.sh --bootstrap-server kafka1:9092 --topic test001 --from-beginning
+kafka-console-consumer.sh --bootstrap-server kafka2:9092 --topic test001 --from-beginning
+kafka-console-consumer.sh --bootstrap-server kafka3:9092 --topic test001 --from-beginning
 ```
 
 
