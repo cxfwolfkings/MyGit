@@ -81,7 +81,6 @@ https://github.com/zpc870921/EFMvcFrameApp
 **参考：**
 
 - [Demo大师](http://www.demodashi.com/)
-
 - https://www.cnblogs.com/tangchuanyang/p/6076725.html
 - https://blog.csdn.net/xuheng8600/article/details/80025982
 - https://www.cnblogs.com/isme-zjh/p/11552928.html
@@ -110,3 +109,15 @@ https://github.com/zpc870921/EFMvcFrameApp
 - https://segmentfault.com/a/1190000013151506
 - https://www.cnblogs.com/CreateMyself/p/11273732.html
 - https://www.cnblogs.com/stulzq/p/8119928.html
+- [supervisor安装与基本使用](https://www.cnblogs.com/shanfeng1000/p/12372061.html)
+- [很漂亮的一个背景控件——ribbons.js](https://www.cnblogs.com/shanfeng1000/p/12382643.html)
+- [Hangfire任务调度框架使用](https://www.cnblogs.com/shanfeng1000/p/12144543.html)
+- [C# 服务器发送邮件失败](https://www.cnblogs.com/shanfeng1000/p/12389974.html)
+- [C# double类型精度丢失问题](https://www.cnblogs.com/shanfeng1000/p/12398446.html)
+- [Nginx基本使用](https://www.cnblogs.com/shanfeng1000/p/12453844.html)
+- [C# 绘制印章](https://www.cnblogs.com/shanfeng1000/p/11683731.html)
+- [Zookeeper基础教程（一）：认识Zookeeper](https://www.cnblogs.com/shanfeng1000/p/12675498.html)
+
+- [rabbimq集群搭建报错](https://www.cnblogs.com/shanfeng1000/p/12108627.html)
+- [C# .net 环境下使用rabbitmq消息队列](https://www.cnblogs.com/shanfeng1000/p/12133181.html)
+

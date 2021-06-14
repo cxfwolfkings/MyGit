@@ -3,7 +3,11 @@
 先导项目管理系统架构：
 
 1. 安装部署
+   - [IIS部署](#IIS部署)
 2. 运维监控
+
+   - [数据库](#数据库)
+
    - [rabbitmq](#rabbitmq)
 
 
@@ -31,7 +35,36 @@
 
 
 
+## 安装部署
+
+
+
+
+
+### IIS部署
+
+参考：
+
+- [IIS部署.net core项目](https://www.cnblogs.com/shanfeng1000/p/12337898.html)
+
+- [IIS部署Python-django项目](https://www.cnblogs.com/shanfeng1000/p/12341622.html)
+- [IIS部署php项目——discuz论坛](https://www.cnblogs.com/shanfeng1000/p/12342372.html)
+
+
+
 ## 运维监控
+
+
+
+### 数据库
+
+```sh
+docker run -d --name myadmin -e PMA_HOST=10.30.100.101 -e PMA_PORT=3306 -p 16088:80 phpmyadmin/phpmyadmin
+```
+
+wifi网：http://10.30.100.103:16080/tool/myadmin/index.php
+
+外网：http://ilead.leadchina.cn:16080/tool/myadmin/index.php，输入账号密码后跳转路径不对，不过没关系，登录验证已经通过了，再次输入以上网址就可以进行管理！
 
 
 

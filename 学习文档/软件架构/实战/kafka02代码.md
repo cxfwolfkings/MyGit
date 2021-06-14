@@ -8,15 +8,83 @@
 
 ## 概念
 
-- Producer：消息的生产者
-- Consumer：消息的消费者
-- ConsumerGroup：消费者组，实现单播和广播的手段
-- Broker：kafak服务集群节点，Kafka集群中的一台或多台服务器统称broker
-- Topic：Kafka处理资源的消息源(feeds of messages)的不同分类
-- Partition：Topic 物理上的分组，一个topic可以分为多个partion，每个partion是一个有序的队列。partion中每条消息都会被分配一个有序的Id(offset)
-- Message：消息，是通信的基本单位，每个producer可以向一个topic（主题）发布 一些消息
-- Producers：消息和数据生成者，向Kafka的一个topic发布消息的过程叫做producers
-- Consumers：消息和数据的消费者，订阅topic并处理其发布的消费过程叫做consumers
+- **Producer**：消息的生产者
+
+  > 生产者将消息发布到 Topic 中，Kafka 根据自己的机制将消息发布到对应的 Partition 中。生产者也可以指定消息存发布的 Partition。
+
+- **Consumer**：消息的消费者
+
+  > 消费者从 Topic 或者 Topic 指定的 Partition 中获取消息进行消费。
+
+- **ConsumerGroup**：消费者组，实现单播和广播的手段
+
+  > 每个 Consumer 可以指定一个 Group Name，相同 Group Name 的 Consumer 视为一个 Group。在开发过程中，**同一 Group Name 的 Consumer 应该实现相同功能！**如果 Consumer 不指定 Group Name，那么它属于默认的那个 Group。
+  >
+  > Consumer 以 Group 的形式从 Topic 中获取消息进行消费，准确说是从某个 Partition 中获取消息进行消费。一个 Group 下会有一个或者多个 Consumer，而 Partition 中的每个消息只会被同一 Group（中的某一个 Consumer）消费一次，因此如果想要多个 Consumer 都可以对同一个消息进行消费，需要设置它们的 GroupName 不一样就可以了。　　
+
+- **Broker**：kafak服务集群节点，Kafka集群中的一台或多台服务器统称broker。一般的，我们搭建的kafka节点数不会少于3台，具体需要多少依据业务量而定。
+
+- **Topic**：Kafka处理资源的消息源（feeds of messages）的不同分类。
+
+  > Topic 是主题的意思，Kafka 规定每个消息都应该有个主题，Topic 可以理解为对消息的一个分类，比如用户注册使用一个 Topic，用户下单应该使用另外一个 Topic。
+  >
+  > Broker 和 Topic 没有包含的含义，一个 Broker 下面可以存在多个 Topic 的消息，而一个 Topic 的消息可以保存在一个或者多个 Broker 中。
+
+- **Partition**：Topic 物理上的分组，一个topic可以分为多个partion，每个partion是一个有序的队列。partion中每条消息都会被分配一个有序的Id（offset）。
+
+  > Partition 是分区，其实这就是 Kafka 的队列，Partition 中的数据是具有顺序的，数据按照顺序进行消费，但是不同 Partition 中数据丢失了顺序性。
+  >
+  > 创建 Topic 时，可以指定 Partition 数，一个 Topic 至少有一个 Partition，kafka 在接收到生产者发送的消息之后，会根据会根据 Paritition 机制将消息**并行的**存储到不同的 Partition 中，这样就提高了吞吐量。
+  >
+  > 如果我们需要严格控制消息的顺序，那么可以创建只包含一个 Partition 的 Topic，或者在发布消息和消费消息时，指定发布或者消费的 Partition。
+
+- **Replication**：Topic 的副本，一个 Topic 可以有多个副本，一个 Topic 下有多个 Partition，每个 Partition 在每个副本中有对应的 Partition 副本，因为 Topic 副本之间需要保持数据的一致性，因此这些 Partition 之间也就形成和 Zookeeper 一样的 Leader-Follower 集群结构，与 Zookeeper 不同的是，对于数据的读写操作都在 Leader 中，Follower 副本只是当 Leader 副本挂了后才重新选取 Leader，Follower 并不向外提供服务。
+
+  > 为了保证高可用（HA），Kafka 会将 Partition 和它的副本均匀的保存在集群的 Broker 中，因此一般设置副本数不超过集群 Broker 节点数，最好是副本数等于集群节点数，使得集群中每个 Broker 都保存有 Partition，这也是 Kafka 默认的做法。
+
+- **Message**：消息，是通信的基本单位，每个producer可以向一个topic（主题）发布 一些消息
+
+- **Offset**
+
+  Offset 即偏移，偏移是 Partition 对 Consumer Group 而言的，当某个 Consumer 成功消费消息之后，Kafka 会标记该 Consumer 对应的 Group 对于此 Partition 的 Offset 加1，也就是偏移一个单位，因此该 Group 下的其他 Consumer 就消费不到这个消息了。
+
+- **ISR（in-sync replicas）**
+
+  上面有提到，Partition 可能会有多个 Partition 副本，然后这些 Partition 之间也就形成和 Zookeeper 一样的 Leader-Follower 集群结构，只不过 Leader 负责读写，Follower 只是同步数据备用。既然是集群，那就涉及数据同步问题。
+
+  每个 Partition 的 Leader 会记录和维护一个与它保持数据同步的 Replication 集合（Follower），这个集合称为 ISR，每个 Partition 都会有一个与它对应的 ISR。当 Leader 接收到消息后，会等待 Follower 同步数据，当 ISR 中的所有 Replication 都确认已同步数据完成后，Leader 就会认为消息已提交。
+
+  当 Leader 挂掉了，Replication 集合对应的 Follower 就会重新选举生成新的 Leader，因为新 Leader 与原 Leader 保持数据同步，因此这样就避免了数据丢失。如果 Replication 集合为空，Leader 挂了就等于数据丢失了，因此 Replication 是很有必要的。
+
+  ISR 由 Leader 维护，而判断一个 Replication 是否有效，主要看它是否通过 Zookeeper 连接并能及时的从 Leader 中同步数据（超时时间由 server.properties 中 replica.lag.time.max.ms 配置），而且还要同步的数据不能与 Leader 相差太多（消息个数由 server.properties 中 replica.lag.max.messages 配置）。
+
+- **ACK**
+
+  Kafka 的 ACK 机制，指的是 Producer 的消息发送确认机制，这直接影响到 Kafka 集群的吞吐量和消息可靠性。这个可靠性级别由 request.required.acks 来申明，它有3个可选值：0，1，-1
+
+  - `0`：当 Producer 将消息发布到 Leader 之后，无需等待 Leader 确认，可以继续发送下一条消息，这样就提高了发送效率，但是消息可靠性最低。
+  - `1`：当 Producer 将消息发布到 Leader 之后，只需等待 Leader 确认，而不管 ISR 中是否已经完成数据同步，这也是 Kafka 默认的 Ack 机制。但是不保证消息一定发送成功，比如 Leader 收到消息并确认后还未进行同步数据就挂了。
+  - `-1`：当 Producer 将消息发布到 Leader 之后，需要等到 ISR 中所有的 Replication 全部完成数据同步确认才算消息发送成功，这样做消息可靠性最高。
+
+  当 `Ack = -1`时，往往需要结合 `min.insync.replicas`（默认值为1）一起使用，这是因为 ISR 中的 Replication 由 Leader 维护，个数可能会减少到0，这时 ISR 是一个空集合，此时 `Ack = -1` 和 `Ack = 1` 是同一种情况，而 `min.insync.replicas` 表示 ISR 中的 Replication 副本个数，当 ISR 中的 Replication 个数少于此配置时，就表示消息发布失败。
+
+- **key**：Key 是 Kafka 消息的路由，Producer 在发布消息时可以指定一个路由 Key，当 Kafka 收到消息时，会按照一定的规则选择消息的 Partition：
+  1. 如果发布时制定了 Partition，则直接使用
+  2. 如果未指定 Partition，但是指定了 Key 值，那么根据 Key 值通过一些规则算法计算消息发布的 Partition
+- **Producers**：消息和数据生成者，向Kafka的一个topic发布消息的过程叫做producers
+- **Consumers**：消息和数据的消费者，订阅topic并处理其发布的消费过程叫做consumers
+
+Kafka 是基于**发布-订阅**模式的分布式消息服务系统，将上面的概念连接起来就是：
+
+**发布**
+
+当我们的应用连接到 Kafka 集群的一个或者多个 Broker 节点往某个 Topic（或者某个 Topic 的 Partition）发布消息时，Kafka 收到消息后会根据它的路由 Key 等信息得到 Partition，然后将消息转发到该 Partition 的 Leader，然后 Leader 会根据 ISR 机制记录消息，根据 Ack 机制对 Producer 做出响应。
+
+**消费**
+
+当我们的应用连接到 Kafka 集群的一个或者多个 Broker 节点，从多个 Topic（或者 Topic 的 Partition）中订阅消息时，可以指定当前消费者所属的群组（Group Name），多个群组（Group）可以订阅同一个 Topic，每个群组都会收到消息，但是一个消息只会被同一 Group 中的某个 Consumer 消费掉，当消息被成功消费掉之后，Kafka 就会标记与当前 Consumer 对应的 Group 和消息所属的 Partition 对应的 Offset 加1。
+
+ 
 
 
 
@@ -129,12 +197,10 @@ Kafak广播模式实现：多个消费者，同一个Topic不同Group
 **参考：**
 
 - [官方文档](http://kafka.apachecn.org/documentation.html#producerapi)
-
 - [C#客户端使用](https://docs.confluent.io/current/clients/dotnet.html)
-
 - [Apache kafka 工作原理介绍](https://www.ibm.com/developerworks/cn/opensource/os-cn-kafka/index.html)
-
 - [从Kafka读取数据](https://www.oreilly.com/library/view/kafka-the-definitive/9781491936153/ch04.html)
-
 - [Kafka为什么这么快](https://www.freecodecamp.org/news/what-makes-apache-kafka-so-fast-a8d4f94ab145/)
+- [没有星星的夏季](https://www.cnblogs.com/shanfeng1000/default.html)
+- [客户端源码](#https://github.com/confluentinc/confluent-kafka-dotnet)
 

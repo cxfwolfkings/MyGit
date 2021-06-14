@@ -1,29 +1,979 @@
 # 微服务架构实战
 
+**格言：**
+
+结果 = 思维方式 * 热情 * 能力
+
+不懒惰，不妥协，人生是一张票，能不能赶上时代的快车，你的步伐掌握在自己脚下！  
+
+**公式：**
+
+- 1.01^365^ = 37.8，0.99^365^ = 0.03  积硅步致千里，积怠倦堕深渊
+- 1.02^365^ = 1377.4  只比你努力一点的人，其实已经甩你很远
+- 1.01^3^ * 0.99^2^ < 1.01  三天打鱼，两天晒网，一无所获
+
 Wind组织系统架构：
 
-1. 安装部署
+1. 备忘录
+   - 一尾蜂
+2. 安装部署
    - [docker安装](#docker安装)
    - [docker-compose](#docker-compose)
    - [Portainer](#Portainer)
-2. 运维监控
-3. [负载均衡](#负载均衡)
-4. [服务注册中心](#服务注册中心)
-5. [API网关](#API网关)
-6. [SFTP安装](#SFTP安装)
-7. [部署前准备](#部署前准备)
-8. [压缩备份](#压缩备份)
-9. [镜像生成](#镜像生成)
-10. [部署前端应用](#部署前端应用)
-11. [部署后端微服务](#部署后端微服务)
-12. [外网服务器部署](#外网服务器部署)
+   - [搭建私有云](#搭建私有云)
+3. 运维监控
+4. [负载均衡](#负载均衡)
+5. [服务注册中心](#服务注册中心)
+6. [API网关](#API网关)
+8. [部署前准备](#部署前准备)
+9. [压缩备份](#压缩备份)
+10. [镜像生成](#镜像生成)
+11. [部署前端应用](#部署前端应用)
+12. [部署后端微服务](#部署后端微服务)
+13. [外网服务器部署](#外网服务器部署)
     - [nginx安装](#nginx安装)
     - [nginx配置](#nginx配置)
-13. [一键部署](#一键部署)
-14. [消息队列](#消息队列)
+14. [一键部署](#一键部署)
+15. [消息队列](#消息队列)
     - [安装RabbitMQ](#安装RabbitMQ)
-15. [分布式日志平台](#分布式日志平台)
-16. [附录](#附录)
+16. [分布式日志平台](#分布式日志平台)
+17. [附录](#附录)
+
+
+
+- [Linux常用命令](#linux常用命令)
+- [安装软件](#安装软件)
+  
+- [关闭防火墙](#关闭防火墙)
+- [docker常用命令](#docker常用命令)
+- [宝塔Linux面板](#宝塔linux面板)
+- [docker阿里云镜像配置](#docker阿里云镜像配置)
+- [compose](#compose)
+- [搭建私有镜像仓库](#搭建私有镜像仓库)
+- [centos7](#centos7)
+- [Portainer](#portainer)
+- [Grafana](#grafana)
+- [ExceptionLess](#ExceptionLess)
+- [安装图片服务器](#安装图片服务器)
+- [前端部署](#前端部署)
+- [后端部署](#后端部署)
+- [设置共享目录](#设置共享目录)
+
+- [Feng](#feng)
+  - [onlyoffice](#onlyoffice)
+- [Angel](#angel)
+
+  - [网络共享](#网络共d享)
+  - [judpyter](#jupyter)
+  - [Deepnote](#Deepnote)
+  - [conda配置清华源](#conda配置清华源)
+  - [shadowsocks](#shadowsocks)
+- [箴言格律](#箴言格律)
+- [收藏网址](#收藏网址)
+- [账号信息](#账号信息)
+
+
+
+## 备忘录
+
+
+
+### 一尾蜂
+
+```sh
+wxdh：
+-------------------------------------------------------------
+FTP: hyw6485860001.my3w.com    hyw6485860001 / Cxf5609757
+DB:  hds161730424.my3w.com     hds161730424 / Cxf5609757
+-------------------------------------------------------------
+
+viyitech：
+-------------------------------------------------------------
+FTP: qxu1606550082.my3w.com    qxu1606550082 / Cxf5609757
+DB:  qdm643953646.my3w.com     qdm643953646 / Cxf5609757
+-------------------------------------------------------------
+
+Wind：
+-------------------------------------------------------------
+url:  121.196.182.26
+user: root
+pwd:  Cxf5609757*
+vnc:  388038
+
+sftp：
+host: 121.196.182.26
+user: sftp
+pwd:  Cxf5609757
+dir:  /data/sftp/mysftp
+
+宝塔Linux面板：
+Bt-Panel: http://121.196.182.26:8888/9619dfd1
+username: 2ft3rt6f
+password: 16631019
+# 官网：https://www.bt.cn/download/linux.html
+# Centos安装脚本：
+yum install -y wget && wget -O install.sh http://download.bt.cn/install/install_6.0.sh && sh install.sh
+# Ubuntu/Deepin安装脚本：
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && sudo bash install.sh
+# Debian安装脚本：
+wget -O install.sh http://download.bt.cn/install/install-ubuntu_6.0.sh && bash install.sh
+# Fedora安装脚本：
+wget -O install.sh http://download.bt.cn/install/install_6.0.sh && bash install.sh
+# 默认端口：8888
+为了提高安全性，当前宝塔新安装的已经开启了安全目录登录，新装机器都会随机一个8位字符的目录名，亦可以在面板设置处修改，如您没记录或不记得了，可以使用以下方式解决：登陆SSH终端输入以下一种命令来解决
+# 1. 查看面板入口：
+/etc/init.d/bt default
+# 2. 关闭入口验证：
+rm -f /www/server/panel/data/admin_path.pl
+
+Docker公共镜像库：https://hub.docker.com/
+账号：wolfkings  
+密码：Cxf5609757
+阿里云镜像库：https://opsx.alibaba.com/mirror
+
+
+```
+
+
+
+
+
+
+
+基础命令：
+
+```sh
+# 查看进程
+top
+# 看内存占用
+free -m
+# 看硬盘占用率
+df -h
+```
+
+
+
+
+
+#### 关闭防火墙
+
+```sh
+# 查看防火墙状态
+systemctl status firewalld.service
+# 关闭运行的防火墙（重启失效）
+systemctl stop firewalld.service
+# 禁止防火墙服务器（永久生效）
+systemctl disable firewalld.service
+```
+
+
+
+### docker阿里云镜像配置
+
+提升获取官方镜像的速度：
+
+```sh
+mkdir -p /etc/dockertee /etc/docker/daemon.json <<-'EOF'{  "registry-mirrors": ["https://6o1rxqal.mirror.aliyuncs.com"]}EOFsystemctl daemon-reloadsystemctl restart docker
+```
+
+镜像仓库申请地址：[https://cr.console.aliyun.com/cn-shanghai/instances/repositories](#https://cr.console.aliyun.com/cn-shanghai/instances/repositories)
+
+注册登录，创建命名空间，创建镜像仓库
+
+```sh
+# 登录阿里云 Docker Registrydocker login --username=一尾蜂 registry.cn-shanghai.aliyuncs.com# 用于登录的用户名为阿里云账号全名，密码为开通服务时设置的密码。# 从Registry中拉取镜像docker pull registry.cn-shanghai.aliyuncs.com/daniel-hub/nginx-docker:[镜像版本号]# 将镜像推送到Registrydocker tag [ImageId] registry.cn-shanghai.aliyuncs.com/daniel-hub/nginx-docker:[镜像版本号]docker push registry.cn-shanghai.aliyuncs.com/daniel-hub/nginx-docker:[镜像版本号]@ 请根据实际镜像信息替换示例中的[ImageId]和[镜像版本号]参数。
+```
+
+选择合适的镜像仓库地址：从ECS推送镜像时，可以选择使用镜像仓库内网地址，推送速度将得到提升并且将不会损耗您的公网流量。
+
+如果您使用的机器位于经典网络，请使用 registry-internal.cn-shanghai.aliyuncs.com 作为Registry的域名登录，并作为镜像命名空间前缀。
+
+如果您使用的机器位于VPC网络，请使用 registry-vpc.cn-shanghai.aliyuncs.com 作为Registry的域名登录，并作为镜像命名空间前缀。
+
+
+
+### compose
+
+简介：Docker Compose 是一个用来定义和运行复杂应用的 Docker 工具。使用 Docker Compose 不再需要使用 shell 脚本来启动容器（通过 docker-compose.yml 配置）。
+
+本质：编排和配置容器集群的工具。
+
+编排：定义被部署的对象的各组成部分之间的耦合关系，部署流程中各个动作的执行顺序，部署过程所需要的依赖文件和被部署文件的存储位置和获取方式，以及如何验证部署成功。这些信息都会在编排工具中以指定的格式定义并保存下来，从而保证这个流程可以在新的环境中快速的复现。
+
+**安装：**
+
+```sh
+# 下载docker-compose 二进制文件curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose# 授予执行权限chmod +x /usr/local/bin/docker-compose# 查看是否成功安装docker-compose --help
+```
+
+【黑魔法】下载地址：`https://github.com/docker/compose/releases`，可以访问外网的环境，在线安装省心
+
+**卸载：**
+
+```sh
+rm /usr/local/bin/docker-compose
+```
+
+**命令：**
+
+1、Docker compose 的使用非常类似于 docker 命令的使用，但是需要注意的是**大部分的 compose 命令都需要到 docker-compose.yml 文件所在的目录下才能执行**。
+
+2、compose 以守护进程模式运行加 `-d` 选项。服务状态：Up
+
+```sh
+docker-compose up -ddocker-compose -f docker-compose.yml up -d
+```
+
+3、查看有哪些服务，使用 `docker-compose ps` 命令，非常类似于 docker 的 ps 命令。
+
+4、查看 compose 日志
+
+```sh
+docker-compose logs webdocker-compose logs redis
+```
+
+5、停止 compose 服务。服务状态：Exit 0（所有关联的活动容器也被停止）
+
+```sh
+docker-compose stopdocker-compose ps
+```
+
+6、重启 compose 服务
+
+```sh
+docker-compose restartdocker-compose ps
+```
+
+7、kill compose 服务。服务状态：Exit 137
+
+```sh
+docker-compose killdocker-compose ps
+```
+
+8、删除 compose 服务（删除所有已停止的关联容器）
+
+```sh
+docker-compose rm
+```
+
+9、帮助命令
+
+```sh
+docker-compose --help
+```
+
+>注意：yaml文件里不能有tab，只能有空格。关于 version 与 Docker 版本的关系如下：
+
+| Compose file format | Docker engine |
+| ------------------- | ------------- |
+| 1                   | 1.9.0+        |
+| 2.0                 | 1.10.0+       |
+| 2.1                 | 1.12.0+       |
+| 2.2, 3.0, 3.1, 3.2  | 1.13.0+       |
+| 2.3, 3.3, 3.4, 3.5  | 17.06.0+      |
+| 2.4                 | 17.12.0+      |
+| 3.6                 | 18.02.0+      |
+| 3.7                 | 18.06.0+      |
+
+docker-compose 源码实例
+
+```yaml
+# docker-Compose的版本version: '3'# 建立2个service 一个wordpress 一个 mysqlservices:  wordpress:    image: wordpress    ports:  # 端口映射 80映射到8080端口      - 8080:80    environment:  # 环境变量2个      WORDPRESS_DB_HOST: mysql      WORDPRESS_DB_PASSWORD: root    networks:      - my-bridge  mysql:    image: mysql    environment:      MYSQL_ROOT_PASSWORD: root      MYSQL_DATABASE: wordpress    volumes:      - mysql-data:/var/lib/mysql    networks:      - my-bridge# 建立一个volumes volumes:  mysql-data:# 建立一个networksnetworks:  my-bridge:    driver: bridge
+```
+
+services:
+
+1. 一个 service 代表一个 container，这个 container 可以从 docker hub 的 image 来创建，也可以从本地的 Dockerfile build 出来的 image 来创建。
+
+2. service 的启动类似 docker run，我们可以给其指定 network 和 volume，所以可以给 service 指定 network 和 volume 的引用
+
+源码地址：[https://github.com/limingios/docker ](https://github.com/limingios/docker )中的No.4
+
+**水平扩展和负载均衡**
+
+原文：[https://idig8.com/2018/07/29/docker-zhongji-40/](https://idig8.com/2018/07/29/docker-zhongji-40/)
+
+**scale** 命令的使用
+
+设置为一个服务启动的容器数量，数量是以这样的参数形式指定的：service=num
+
+```sh
+docker-compose up --scale web=3 -d
+```
+
+如果报错，请修改 docker-compose.yml 配置文件，将 web 对应的端口映射去掉！示例：
+
+```sh
+# -d后台运行sudo docker-compose up -d# 启动了2个容器，1个web，1个resdissudo docker-compose ps# 水平扩展给web的容器增加到3个sudo docker-compose up --scale web=3 -d# 启动了4个容器，3个web，1个resdissudo docker-compose ps
+```
+
+但是问题来了没有暴露到外边的端口都是5000内部端口，所以出来了一个命令负载均衡工具：**haproxy**
+
+**参考：**
+
+- 官网：[https://docs.docker.com/compose/compose-file/](https://docs.docker.com/compose/compose-file/)
+- 简介：[https://idig8.com/2018/07/27/docker-chuji-12/](#https://idig8.com/2018/07/27/docker-chuji-12/)
+
+**示例：**
+
+场景：redis容器，tomcat容器，nginx容器，mysql容器，这4个容器的启动是有顺序性的，docker compose就是为了组合启动的，而不是手动来启动。（本例子讲的是2个容器，redis和web）
+
+准备环境：
+
+1） 创建测试项目文件夹
+
+```sh
+mkdir composetestcd composetest
+```
+
+默认python2.7在centos都安装了，就用python来演示，演示之前需要安装pip工具，类似java的maven管理python模块的工具
+
+```sh
+#这个软件包会自动配置yum的软件仓库。yum install -y epel-releaseyum install -y python-pip
+```
+
+当然你也可以不安装epel这个包，自己配置软件仓库也是一样的，自己手工添加软件仓库配置文件：
+
+```sh
+vi /etc/yum.repos.d/epel.repo[epel]name=epelmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-$releasever&arch=$basearchenabled=1gpgcheck=0
+```
+
+添加完毕之后：`yum clean all && yum update`
+
+最后终极大发——有pptpd的yum源
+
+```sh
+rpm -Uvh http://poptop.sourceforge.net/yum/stable/rhel6/pptp-release-current.noarch.rpm
+```
+
+2） 编辑app.py并保存
+
+（描述：简单的一个httpserver，主要是为了类似tomcat的一个sevlet，当访问一次，redis节点就增加一个，就可以看到相应的输出）
+
+```py
+from flask import Flaskfrom redis import Redisapp = Flask(__name__)redis = Redis(host='redis', port=6379)@app.route('/')def hello():  redis.incr('hits')  return 'Hello World! I have been seen %s times.' %redis.get('hits')if __name__ == "__main__":  app.run(host="192.168.101.13", debug=True)
+```
+
+3） 在项目目录创建requirements.txt并保存
+
+命令：
+
+```sh
+vi requirements.txt
+```
+
+内容：
+
+```txt
+flaskredis
+```
+
+利用Dockerfile创建docker镜像（重头戏）
+
+命令：
+
+```sh
+vi Dockerfile
+```
+
+内容：
+
+```sh
+FROM python:2.7ADD . /codeWORKDIR /codeRUN pip install -r requirements.txtCMD python app.py
+```
+
+命令：
+
+```sh
+docker build -t web .
+```
+
+定义服务
+
+创建docker-compose.yml文件，Compose文件定义了2个服务，web和redis。
+
+Web服务：
+
+1. 从当前目录下的dockerfile创建
+2. 容器的5000端口与宿主机5000端口绑定
+3. 将项目目录与容器内的/code目录绑定
+4. web服务与redis服务建立连接
+
+命令：
+
+```sh
+vi docker-compose.yml
+```
+
+内容（实践时要将注释内容删除）：
+
+```yml
+version: '2'        -- version版本services:           -- services服务  web:              -- web服务名称    build: .        -- build当前目录    ports:      - "5000:5800" -- ports映射的端口    volumes:      - .:/code     -- 挂载    depends_on:     -- 前置服务redis      - redis  redis:            -- redis依赖的镜像    image: redis   -- 不能用tab，必须用空格
+```
+
+通过compose运行app服务
+
+```sh
+docker-compose up
+```
+
+备注：
+
+```sh
+docker-compose up –d （后台启动）docker-compose stop （停止运行）
+```
+
+Compose命令集：[https://docs.docker.com/compose/reference/](#https://docs.docker.com/compose/reference/)
+
+**练习：**
+
+配置文件：[docker-compose.yml](./Codes/docker-compose.yml)
+
+初始化：`docker swarm init`
+
+运行：
+
+```sh
+docker stack deploy -c docker-compose.yml getstartedlab #应用程序命名为getstartedlab
+```
+
+查看应用程序服务：`docker service ls` 或者 `docker stack services getstartedlab`
+
+在服务中运行的单个容器称为任务，任务被赋予以数字递增的唯一ID。列出您的服务任务：`docker service ps getstartedlab_web`
+
+如果您只列出系统上的所有容器，则任务也会显示，但不会被服务过滤：`docker container ls -q`
+
+您可以 `curl -4 http://localhost:4000` 连续多次运行，或者在浏览器中转到该URL并点击刷新几次。无论哪种方式，容器ID都会发生变化，从而证明负载均衡；对于每个请求，以循环方式选择5个任务中的一个来响应
+
+您可以通过更改docker-compose.yml，保存并重新运行 `docker stack deploy` 命令来扩展应用程序，Docker执行实时更新，无需首先删除应用或杀死任何容器。
+
+Take the app down：`docker stack rm getstartedlab`  
+Take down the swarm：`docker swarm leave --force`
+
+基本命令：
+
+```sh
+docker stack ls  # List stacks or appsdocker stack deploy -c <composefile> <appname>  # Run the specified Compose filedocker service ls  # List running services associated with an appdocker service ps <service>  # List tasks associated with an appdocker inspect <task or container>  # Inspect task or containerdocker container ls -q # List container IDsdocker stack rm <appname> # Tear down an applicationdocker swarm leave --force # Take down a single node swarm from the manager
+```
+
+【集群】准备工作：
+
+```sh
+# 下载Oracle VirtualBoxwget http1s://download.virtualbox.org/virtualbox/6.0.6/VirtualBox-6.0-6.0.6_130049_el7-1.x86_64.rpm# 安装VirtualBoxyum install VirtualBox-6.0-6.0.6_130049_el7-1.x86_64.rpm# 安装docker-machinebase=https://github.com/docker/machine/releases/download/v0.16.1 && curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine && sudo install /tmp/docker-machine /usr/local/bin/docker-machine# 通过显示机器版本来检查安装：docker-machine version
+```
+
+Machine资源库提供了几个bash脚本，可添加以下功能：
+
+- 命令完成
+- 一个在shell提示符下显示活动计算机的函数
+- 一个函数包装器，它添加一个docker-machine use子命令来切换活动机器
+
+确认版本并将脚本保存到 /etc/bash_completion.d 或 /usr/local/etc/bash_completion.d：
+
+```bash
+base=https://raw.githubusercontent.com/docker/machine/v0.14.0for i in docker-machine-prompt.bash docker-machine-wrapper.bash docker-machine.bashdo  sudo wget "$base/contrib/completion/bash/${i}" -P /etc/bash_completion.ddone
+```
+
+然后，您需要 `source /etc/bash_completion.d/docker-machine-prompt.bash` 在bash终端中运行，告诉您的设置，它可以找到docker-machine-prompt.bash您之前下载的文件。
+
+要启用 docker-machineshell 提示，请添加 $(__docker_machine_ps1) 到您的PS1设置中~/.bashrc。
+
+```sh
+PS1='[\u@\h \W$(__docker_machine_ps1)]\$ '
+```
+
+可以在每个脚本顶部的[注释](https://github.com/docker/machine/tree/master/contrib/completion/bash)中找到其他文档。
+
+如何卸载Docker Machine？
+
+- （可选）删除您创建的计算机。
+
+要单独删除每台机器： `docker-machine rm <machine-name>`
+
+要删除所有计算机：(docker-machine rm -f $(docker-machine ls -q) 您可能需要 -force 在 Windows 上使用）。
+
+删除计算机是一个可选步骤，因为在某些情况下，您可能希望将现有计算机保存并迁移到 Docker for Mac 或 Docker for Windows 环境。
+
+- 删除可执行文件：`rm $(which docker-machine)`
+
+注意：作为信息点config.json，与创建的每个虚拟机相关的证书和其他数据docker-machine 存储在 ~/.docker/machine/machines/Mac 和 Linux 以及 ~\.docker\machine\machines\Windows 上。
+
+我们建议您不要直接编辑或删除这些文件，因为这只会影响 Docker CLI 的信息，而不会影响实际的VM，无论它们是本地还是远程服务器。
+
+继续示例：
+
+使用VirtualBox驱动程序创建2个VM
+
+```sh
+docker-machine create --driver virtualbox myvm1docker-machine create --driver virtualbox myvm2
+```
+
+如果报错：`yum -y install kernel-devel-3.10.0-862.el7.x86_64`
+
+
+
+### 搭建私有镜像仓库
+
+1、下载镜像registry
+
+```sh
+docker pull registry
+```
+
+2、运行registry容器
+
+```sh
+docker run -itd -v /data/registry:/var/lib/registry -p 5000:5000 --restart=always --name registry registry:latest# 测试镜像仓库中所有的镜像curl http://127.0.0.1:5000/v2/_catalog
+```
+
+参数说明：
+
+- -itd：在容器中打开一个伪终端进行交互操作，并在后台运行；
+- -v：把宿主机的/data/registry目录绑定 到 容器/var/lib/registry目录（这个目录是registry容器中存放镜像文件的目录），来实现数据的持久化；
+- -p：映射端口；访问宿主机的5000端口就访问到registry容器的服务了；
+- --restart=always：这是重启的策略，假如这个容器异常退出会自动重启容器；
+- --name registry：创建容器命名为registry，你可以随便命名；
+  registry:latest：这个是刚才pull下来的镜像；
+
+3、为镜像打标签
+
+```sh
+docker tag consul:latest 10.30.100.103:5000/consul:v1
+```
+
+- consul:lastest 这是源镜像，也是刚才pull下来的镜像文件；
+- 10.30.100.103:5000/consul:v1：这是目标镜像，也是registry私有镜像服务器的IP地址和端口；
+
+4、上传到镜像服务器
+
+```sh
+docker push 10.30.100.103:5000/consul:v1
+```
+
+提示：`Get https://10.30.100.103:5000/v2/: http: server gave HTTP response to HTTPS client`
+
+注意，这是报错了，需要https的方法才能上传，我们可以修改下daemon.json来解决：
+
+```sh
+vim /etc/docker/daemon.json
+```
+
+```json
+{  "registry-mirrors": ["https://registry.docker-cn.com"],  "insecure-registries": ["10.30.100.103:5000"]}
+```
+
+添加私有镜像服务器的地址，注意书写格式为json，有严格的书写要求，然后重启docker服务：
+
+```sh
+systemctl  restart docker
+```
+
+再次上传，没问题。
+
+5、拉取私有镜像
+
+```sh
+docker pull 10.30.100.103:5000/consul:v1# 测试镜像仓库中所有的镜像curl http://127.0.0.1:5000/v2/_catalog# 列出consul镜像有哪些tagcurl http://127.0.0.1:5000/v2/consul/tags/list
+```
+
+
+
+### centos7
+
+用于测试容器间通信：
+
+```sh
+docker pull centos:7# 启动并进入容器docker run -it centos:7 /bin/bash
+```
+
+
+
+### Portainer
+
+好用的图形化管理界面：
+
+```txt
+url:  http://121.196.182.26:9000/usr:  adminpwd:  Cxf5609757
+```
+
+安装：
+
+```sh
+docker pull portainer/portainer
+docker run -d -p 9000:9000 \  --restart=always \  -v /var/run/docker.sock:/var/run/docker.sock \  --name prtainer-dev1 \  portainer/portainer
+```
+
+
+
+### 搭建私有云
+
+包含功能：
+
+- [sftp](#sftp)
+
+- 云笔记：Joplin
+- 云流程图：draw.io
+
+#### sftp
+
+```sh
+# 查看openssh版本，openssh版本必须大于4.8p1
+ssh -V
+# 创建sftp组
+groupadd sftp
+# 创建sftp用户
+useradd -g sftp -s /sbin/nologin -M sftp
+passwd sftp
+输入密码
+# 建立目录
+mkdir -p /data/sftp/mysftp/
+usermod -d /data/sftp/mysftp sftp
+
+# 修改sshd_config
+vim /etc/ssh/sshd_config
+# 注释掉
+# Subsystem sftp /usr/libexec/openssh/sftp-server
+# 添加
+Subsystem sftp internal-sftp
+Match Group sftp
+ChrootDirectory /data/sftp/mysftp
+ForceCommand internal-sftp
+AllowTcpForwarding no
+X11Forwarding no
+
+# 设置Chroot目录权限
+chown root:sftp /data/sftp/mysftp
+chmod 755 /data/sftp/mysftp
+
+# 设置可以写入的目录
+mkdir /data/sftp/mysftp/upload
+chown sftp:sftp /data/sftp/mysftp/upload
+chmod 755 /data/sftp/mysftp/upload
+
+# 关闭selinux：
+vim /etc/selinux/config
+# 将文件中的 SELINUX=enforcing 修改为 SELINUX=disabled，然后保存。
+
+# 执行：
+setenforce 0
+service sshd restart
+# 或
+systemctl restart sshd.service
+
+# 测试
+sftp sftp@127.0.0.1
+```
+
+问题：
+
+1、修改sshd_config文件后重启 sshd，报错（通过`sshd -t`查看）：`Directive 'UseDNS' is not allowed within a Match block`
+
+语法错误，原因未知。只需将新加的配置放在下面配置之后就不报错了。
+
+```conf
+# 新加配置放在这一段之后
+UseDNS no
+AddressFamily inet
+PermitRootLogin yes
+SyslogFacility AUTHPRIV
+PasswordAuthentication yes
+
+# 下面是新加的配置
+Subsystem sftp internal-sftp
+UsePAM yes
+Match user sftpuser1
+ForceCommand internal-sftp
+ChrootDirectory /data/wwwroot/user1/
+```
+
+2、新用户通过 sftp 访问时，权限不全，只能读不能写
+
+试着用 root 账号去把该用户的 Home 目录权限改成 777，但是会出现该用户 sftp 登陆不了的情况。（报错：`Server unexpectedly closed network connection`）
+
+google 了原因如下：
+
+给新用户的 Home 目录的权限设定有两个要点：
+
+1. 由 ChrootDirectory 指定的目录开始一直往上到系统根目录为止的目录拥有者都只能是 root
+2. 由 ChrootDirectory 指定的目录开始一直往上到系统根目录为止都不可以具有群组写入权限（最大权限 755）
+
+如果违反了上面的两条要求，那么就会出现新用户访问不了 sftp
+的情况。
+
+所以 /data/wwwroot/user1/ 及上级的所有目录属主一定要是
+root，并且组权限和公共权限不能有写入权限，如果一定需要有写入权限，那们可以在 /data/wwwroot/user1/ 下建立 777 权限的文件夹。
+
+```sh
+mkdir /data/wwwroot/user1/upload
+chown -R sftpuser1:root /data/wwwroot/user1/upload
+```
+
+这样 sftpuser1 用户就可以在 /data/wwwroot/user1/upload 里随意读写文件了。
+
+#### Wind镜像
+
+镜像文件：
+
+```dockerfile
+FROM centos:latest
+# 作者：Colin
+LABEL maintainer="Colin Chen <399596326@qq.com>"
+# 设置时区、创建初始化目录
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo 'Asia/Shanghai' >/etc/timezone \
+    && mkdir -p /usr/local/java/jdk \
+    && mkdir -p /usr/local/tomcat
+# 从客户机拷贝文件到容器中（自动解压）
+# ADD jdk-8u291-linux-x64.tar.gz /usr/local/java/
+# 创建符号链接
+# RUN ln -s /usr/local/java/jdk1.8.0_291 /usr/local/java/jdk
+# 设置环境变量（分两步）
+ENV JAVA_HOME /usr/local/java/jdk
+ENV JRE_HOME=${JAVA_HOME}/jre \
+    CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib \
+    PATH=${JAVA_HOME}/bin:$PATH
+```
+
+执行命令：
+
+```sh
+# 进入根目录
+cd /data/sftp/mysftp/upload/wind
+# 解压文件
+unzip apache-tomcat-8.5.57.zip
+tar -xzvf jdk-8u291-linux-x64.tar.gz
+# 授权
+chown -R sftp:sftp /data/sftp/mysftp/upload/wind/apache-tomcat-8.5.57
+chmod +x -R /data/sftp/mysftp/upload/wind/jdk1.8.0_291
+chmod +x -R /data/sftp/mysftp/upload/wind/apache-tomcat-8.5.57
+# 生成镜像
+docker build -t owf/wind .
+# 启动容器
+docker run -itd \
+  -v /data/sftp/mysftp/upload/wind/jdk1.8.0_291/:/usr/local/java/jdk \
+  -v /data/sftp/mysftp/upload/wind/apache-tomcat-8.5.57/:/usr/local/tomcat \
+  -p 8080:8080 \
+  --name wind \
+  owf/wind \
+  /bin/bash
+# 进入容器
+docker exec -it wind bash
+# 启动tomcat
+/usr/local/tomcat/bin/startup.sh
+# 关闭tomcat
+/usr/local/tomcat/bin/shutdown.sh
+```
+
+
+
+
+
+### Grafana
+
+下载地址：[https://grafana.com/grafana/download?platform=windows](https://grafana.com/grafana/download?platform=windows)
+
+1、把下载的.zip文件解压到您的想运行Grafana的任何地方，然后进入conf目录复制一份sample.ini并重命名为custom.ini。以后所有的配置应该编辑custom.ini，永远不要去修改defaults.ini。
+
+
+
+### ExceptionLess
+
+官网：https://exceptionless.com/，用户名：chenxiao8516@163.com，密码：Cxf5609757
+
+
+
+### 安装图片服务器
+
+搭建 nginx 服务器实现图片的预览（承载在 docker 中）
+
+Dockerfile：
+
+```dockerfile
+# 拉取nginx镜像FROM nginx:alpine# 工作目录WORKDIR /app# 从客户机复制到容器中COPY nginx.conf /etc/nginx/nginx.conf
+```
+
+nginx.conf：
+
+```yml
+user root; # 设置为和启动用户一致，否则可能报403错误worker_processes  1;#error_log  logs/error.log;#error_log  logs/error.log  notice;#error_log  logs/error.log  info;#pid        logs/nginx.pid;events {    worker_connections  1024;}http {    include       mime.types;    default_type  application/octet-stream;    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '    #                  '$status $body_bytes_sent "$http_referer" '    #                  '"$http_user_agent" "$http_x_forwarded_for"';    #access_log  logs/access.log  main;    sendfile        on;    #tcp_nopush     on;    #keepalive_timeout  0;    keepalive_timeout  65;    #gzip  on;    server {        listen       6100; # 1.你想让你的这个项目跑在哪个端口        server_name  121.196.182.26; # 2.当前服务器ip        #charset koi8-r;        #access_log  logs/host.access.log  main;        location / {            root   /app/; # 3.根目录的位置（工作目录设置为/app了）            index  index.html index.htm;        #   try_files $uri $uri/ /index.html; # 4.重定向,内部文件的指向（照写）        }        #location /api { # 4.当请求跨域时配置端口转发        #    proxy_pass http://47.92.76.97:8848/api; # 5.转发地址        #}        #error_page  404              /404.html;        # redirect server error pages to the static page /50x.html        #        error_page   500 502 503 504  /50x.html;        location = /50x.html {            root   html;        }        # proxy the PHP scripts to Apache listening on 127.0.0.1:80        #        #location ~ \.php$ {        #    proxy_pass   http://127.0.0.1;        #}        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000        #        #location ~ \.php$ {        #    root           html;        #    fastcgi_pass   127.0.0.1:9000;        #    fastcgi_index  index.php;        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;        #    include        fastcgi_params;        #}        # deny access to .htaccess files, if Apache's document root        # concurs with nginx's one        #        #location ~ /\.ht {        #    deny  all;        #}    }    # another virtual host using mix of IP-, name-, and port-based configuration    #    #server {    #    listen       8000;    #    listen       somename:8080;    #    server_name  somename  alias  another.alias;    #    location / {    #        root   html;    #        index  index.html index.htm;    #    }    #}    # HTTPS server    #    #server {    #    listen       443 ssl;    #    server_name  localhost;    #    ssl_certificate      cert.pem;    #    ssl_certificate_key  cert.key;    #    ssl_session_cache    shared:SSL:1m;    #    ssl_session_timeout  5m;    #    ssl_ciphers  HIGH:!aNULL:!MD5;    #    ssl_prefer_server_ciphers  on;    #    location / {    #        root   html;    #        index  index.html index.htm;    #    }    #}}
+```
+
+>跨域问题在这里着重说一下：  
+>这里的跨域配置是打包后，nginx 做的代理转发。和开发模式的 proxytable 没有任何关系。  
+>如果 nginx 不进行跨域的配置，虽然项目部署了，但是服务会访问不到。  
+>关于跨域的介绍可以看：[https://blog.csdn.net/weixin_42565137/article/details/90578780](https://blog.csdn.net/weixin_42565137/article/details/90578780)
+
+生成镜像，启动容器
+
+```sh
+# 进入目录cd /data/sftp/mysftp/upload/web/# 生成镜像docker build -t feng-web .# 启动docker run -d -p 6100:6100 -v /data/sftp/mysftp/upload/web/:/app --name feng-web feng-web
+```
+
+
+
+### 前端部署
+
+
+
+### 后端部署
+
+
+
+### 设置共享目录
+
+**尚未连通！**
+
+使用 samba 实现，安装：
+
+```sh
+yum -y install samba# 配置文件修改vim /etc/samba/smb.conf
+```
+
+说明：
+
+```ini
+[shared_name] #共享名称comment = Comment String #注释信息path = /share  #共享的目录路径public =  {yes|no}   #是否公开，受限浏览guest ok = {yes|no}  # 是否启用来宾账号writable = {yes|no} | read only = {yes|no} # 共享目录是否可写valid users = lxtone,root #被许可访问该共享目录的用户账号write list = lxtone,root #允许写入的用户账号，前面有+是代表允许可写的组。
+```
+
+上传目录设置为共享：
+
+```ini
+[upload]comment = Upload Directorypath = /data/sftp/mysftp/upload/public = yesguest ok = yeswritable = yes
+```
+
+重启服务：
+
+```sh
+systemctl restart smb
+```
+
+
+
+## Feng
+
+无线网不要共享！
+
+k8s-node1 ~ k8s-node4:
+
+```sh
+host:  192.168.1.101 ~ 192.168.1.104       192.168.101.101 ~ 192.168.101.104user:  rootpass:  Qwerty123456# 102gitlab-ce# 103docker# 104sftp, elasticsearch, kibanauser:  sftppass:  Qwerty123456/home/colin/mysftp/upload
+```
+
+
+
+### onlyoffice
+
+```sh
+# 创建 'onlyoffice' docker 网络
+docker network create --driver bridge onlyoffice
+# 安装ONLYOFFICE Document Server.sudo 
+docker run --net onlyoffice -i -t -d \
+           --restart=always \
+           --name onlyoffice-document-server \
+           -v/app/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data \-v/app/onlyoffice/DocumentServer/logs:/var/log/onlyoffice \onlyoffice/documentserver# 安装 ONLYOFFICE Mail Server.sudo docker run --net onlyoffice --privileged -i -t -d --restart=always --name onlyoffice-mail-server \-p 6025:25 -p 6143:143 -p 6587:587 \-v /app/onlyoffice/MailServer/data:/var/vmail \-v /app/onlyoffice/MailServer/data/certs:/etc/pki/tls/mailserver \-v /app/onlyoffice/MailServer/logs:/var/log \-v /app/onlyoffice/MailServer/mysql:/var/lib/mysql \-h intellif.com \onlyoffice/mailserver# 安装ONLYOFFICE Community Serversudo docker run --net onlyoffice -i -t -d --restart=always --name onlyoffice-community-server \-p 6081:80 -p 5222:5222 -p 6444:443 \-v /app/onlyoffice/CommunityServer/data:/var/www/onlyoffice/Data \-v /app/onlyoffice/CommunityServer/mysql:/var/lib/mysql \-v /app/onlyoffice/CommunityServer/logs:/var/log/onlyoffice \-v /app/onlyoffice/DocumentServer/data:/var/www/onlyoffice/DocumentServerData \-e DOCUMENT_SERVER_PORT_80_TCP_ADDR=onlyoffice-document-server \-e MAIL_SERVER_DB_HOST=onlyoffice-mail-server \onlyoffice/communityserver
+```
+
+通过 [IP](http://121.196.182.26:6081/) 访问 `onlyoffice web` 端，输入一个密码并指定下次访问你的office 所使用的电子邮件地址，进入页面。
+
+
+
+## Angel
+
+
+
+### 网络共享
+
+一台centos7的系统，有2个网卡，一个连接外网网段10.8.20.0/24，一个连接内网网段172.168.10.0/24，其ip为：172.168.10.1，局域网中的其他机器只能连接172.168.10.0/24网段，例如其中一台的IP为：172.168.1.100，现在要使局域网中的其他机器能连上外网，可以在这台centos7的系统上做如下操作实现：
+
+```sh
+# 开启NAT转发 firewall-cmd --permanent --zone=public --add-masquerade# 开放DNS使用的53端口，否则可能导致内网服务器虽然设置正确的DNS，但是依然无法进行域名解析。firewall-cmd --zone=public --add-port=53/tcp --permanent# 重启防火墙systemctl restart firewalld.service
+```
+
+这样，在局域网的其他机器上，设置其IP为172.168.10.0/24网段，默认网关为172.168.10.1，即可连接外网
+
+
+
+### Deepnote
+
+https://zhuanlan.zhihu.com/p/288348633
+
+
+
+### conda配置清华源
+
+```sh
+# 1. 直接打开cmd输入以下命令conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud//pytorch/conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/conda config --set show_channel_urls yes# 查看conda config --show channels# 移除清华源conda config --remove channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/# 2. 或者可以通过修改用户目录下的 .condarc 文件------------------------------------------------------------------channels:  - defaultsshow_channel_urls: truedefault_channels:  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/rcustom_channels:  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud  msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud  bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud  menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud------------------------------------------------------------------# 即可添加 Anaconda Python 免费仓库。Windows 用户无法直接创建名为 .condarc 的文件，可先执行 conda config --set show_channel_urls yes 生成该文件之后再修改。# 检测环境变量conda info --envs
+```
+
+
+
+### shadowsocks
+
+参考：https://github.com/shadowsocks/shadowsocks-windows/releases
+
+
+
+## 箴言格律
+
+>Keep working, we will find a way out. This is Finley, welcome to join us.
+>
+>生活的意义是什么？  
+>我一直弄不懂这个问题。  
+>于是，我彷徨，我不知道我该做些什么；  
+>什么才是真的有意义！
+>
+>我读历史，可是历史却连人是怎么来的都弄不清楚；  
+>我读未来，未来又告诉我人类所在的地球将会毁灭。  
+>我便读现在，可历史却告诉我：现在的一切都是不可辨的，对错需要让后人去评说；  
+>我相信哲学，可未来也告诉我：哲学是会变的，它只是人的世界观的一种反映。
+>
+>我活着是为了什么？  
+>为了享乐？快乐和痛苦一样，只是一种感受；哪一种更好受，是随着心境而不同。  
+>为了人类的延续？可是，地球的生命毕竟有限！  
+>生活的意义，我一直在探索......
+>
+>突然有一天，未来告诉我：  
+>借助计算机科技，人类将有走出地球的希望！  
+>于是，我终于知道我是为了什么而活着：  
+>为了人类尽早能够走出地球！
+>
+>当然，我没有那么大的能力。  
+>当然，我有我的历史使命。  
+>我只能用我的力所能及，为人类出一份力。  
+>那就是加快计算机的发展！
+>
+>计算机是有限的机器；  
+>科学却有无限的能力；  
+>我们必须利用计算机来探索科学；  
+>然后利用科学来扩大计算机的有限范围；
+>
+>继续、继续、继续；  
+>终于有一天，我们能够坐着由计算机控制的  
+>一种现在还不知道的东西，飞出地球，  
+>飞到人类新的天地！
+>
+>之前：  
+>只要我没有弄清生活的意义，我不会随便放弃；  
+>之后：  
+>宇宙只给你一个生命，其它的要你自己去把握。
+
+## 收藏网址
+
+- [docker公共镜像仓库](https://hub.docker.com/)
+
+- [清华大学开源软件镜像站](https://mirror.tuna.tsinghua.edu.cn/)
+
+- [北京理工大学开源软件镜像服务](https://mirror.bit.edu.cn/web/)
+
+- [gitlab](https://docs.gitlab.com/)
+
+  
+
+## 账号信息
+
+新浪：chenxiaofengshen / Cxf19870518
+
+
 
 
 
@@ -1382,102 +2332,6 @@ consul agent \
 上传工具： SFTP
 运行环境： Docker
 ```
-
-### SFTP安装
-
-```sh
-# 查看openssh版本，openssh版本必须大于4.8p1
-ssh -V
-# 创建sftp组
-groupadd sftp
-# 创建sftp用户
-useradd -g sftp -s /sbin/nologin -M sftp
-passwd sftp
-输入密码
-# 建立目录
-mkdir -p /data/sftp/
-usermod -d /data/sftp sftp
-
-# 修改sshd_config
-vim /etc/ssh/sshd_config
-# 注释掉
-# Subsystem sftp /usr/libexec/openssh/sftp-server
-# 添加
-Subsystem sftp internal-sftp
-Match Group sftp
-ChrootDirectory /data/sftp
-ForceCommand internal-sftp
-AllowTcpForwarding no
-X11Forwarding no
-
-# 设置Chroot目录权限
-chown root:sftp /data/sftp
-chmod 755 /data/sftp
-
-# 设置可以写入的目录
-mkdir /data/sftp/upload
-chown sftp:sftp /data/sftp/upload
-chmod 755 /data/sftp/upload
-
-# 关闭selinux：
-vim /etc/selinux/config
-# 将文件中的 SELINUX=enforcing 修改为 SELINUX=disabled，然后保存。
-
-# 执行：
-setenforce 0
-service sshd restart
-# 或
-systemctl restart sshd.service
-
-# 测试
-sftp sftp@127.0.0.1
-```
-
-问题：
-
-1、修改sshd_config文件后重启 sshd，报错（通过`sshd -t`查看）：`Directive 'UseDNS' is not allowed within a Match block`
-
-语法错误，原因未知。只需将新加的配置放在下面配置之后就不报错了。
-
-```conf
-# 新加配置放在这一段之后
-UseDNS no
-AddressFamily inet
-PermitRootLogin yes
-SyslogFacility AUTHPRIV
-PasswordAuthentication yes
-
-# 下面是新加的配置
-Subsystem sftp internal-sftp
-UsePAM yes
-Match user sftpuser1
-ForceCommand internal-sftp
-ChrootDirectory /data/wwwroot/user1/
-```
-
-2、新用户通过 sftp 访问时，权限不全，只能读不能写
-
-试着用 root 账号去把该用户的家目录权限改成 777，但是会出现该用户 sftp 登陆不了的情况。（报错：`Server unexpectedly closed network connection`）
-
-google 了原因如下：
-
-给新用户的 Home 目录的权限设定有两个要点：
-
-1. 由 ChrootDirectory 指定的目录开始一直往上到系统根目录为止的目录拥有者都只能是 root
-2. 由 ChrootDirectory 指定的目录开始一直往上到系统根目录为止都不可以具有群组写入权限（最大权限 755）
-
-如果违反了上面的两条要求，那么就会出现新用户访问不了 sftp
-的情况。
-
-所以 /data/wwwroot/user1/ 及上级的所有目录属主一定要是
-root，并且组权限和公共权限不能有写入权限，如果一定需要有写入权限，那们可以在 /data/wwwroot/user1/ 下建立 777 权限的文件夹。
-
-```sh
-mkdir /data/wwwroot/user1/upload
-chown -R sftpuser1:root /data/wwwroot/user1/upload
-```
-
-这样 sftpuser1 用户就可以在 /data/wwwroot/user1/upload 里随意读写文件了。
 
 
 

@@ -1,63 +1,98 @@
 # Hive
 
-## Why
-
-在传统数据分析中，最常见的还是结构化数据，这个场景有它成熟的分析工具——SQL。数据量达到某个量级之后，单机或MPP数据库无法承受其负载，势必要转向大数据平台；但数据迁移完成后，因为大数据有自己的计算引擎（如Mapreduce），所以之前所有使用SQL编写的分析任务，都需要重构为MapReduce任务，这个工作量极大，迁移成本极高。而且迁移之后，对结构化数据的分析，也不能再使用SQL这种方便的工具来进行了，需要学习MapReduce语法，学习成本也很大。
-
-那可不可以将特定领域，已经成熟的语法和使用习惯，如结构化数据分析的SQL，也迁移到大数据平台上来？当然可以，而且在大数据产品中，都是致力于此，用于提升大数据在不同场景的易用性。在结构化数据分析，即数据仓库场景中，可以将SQL自动转化为MapReduce任务的，在Hadoop家族中，最常用的便是Hive了。
-
-## What
-
-- 早期由Facebook开发，后来由Apache软件基金会开发，并成为其顶级项目
-
-- 基于Hadoop的一个数据仓库工具
-
-- 核心思想是将迁移到HDFS中的结构化的数据文件，映射为一张数据库表，并提供sql查询、分析功能，可以将sql语句转换为MapReduce任务进行运行，也支持转换为Spark任务。
-
-  > 官方推荐底层转换为Spark进行运算。
-  >
-  > Hive对原生SQL的支持率并不高，大概在60%左右，它有自己特定的语法HQL（Hive SQL)。但即便如此，在结构化数据分析中，已经带来极大的便捷了。
-
-- 标识
-
-  ![x](../../../Resources/hive01.png)
-
-### Hive架构
-
-![x](../../../Resources/hive02.png)
-
-Hive架构主要由3部分构成，Client、Driver、MetaStore。其中Client客户端用于任务的提交，包含Shell客户端Beeline、Hive Cli，还有JDBC客户端；Driver会对提交的任务进行解析，将HiveSQL转换为MapReduce作业，它包含解释器（Antlr）、编译器、优化器、执行器，共同完成HQL查询语句从语法分析、编译成逻辑查询计划、优化以及转换成物理查询计划的过程；在转换过程中，因为SQL处理的是结构化数据，而Hive的数据是以文件的形式保存在HDFS中的，所以要将文件映射为二维表结构，MetaStore中存储的元数据信息（表类型、属性、字段、权限等）便可以辅助完成数据映射的功能，一般使用Mysql或Derby作为MetaStore的数据存储。
-
-最终通过Driver转换成的MapReduce任务，会提交到底层的Hadoop平台上进行运算，返回运算结果。
-
-## How
-
-### 搭建模式
-
-Hive提供三种搭建模式：本地模式、单用户模式、多用户/远程服务器模式。
-
-#### 本地模式
-
-本地模式最为简单，仅适用于测试环境。在启动时，直接使用Hive CLI客户端，它自带Driver，而且连接到一个内置的In-memory 的数据库Derby作为MetaStore。
-
-![x](../../../Resources/hive03.png)
-
-#### 单用户模式
-
-单用户模式会部署MetaStore，一般使用MySQL，但Driver依然集成在Hive Cli中，因为没有权限管控功能，所以只适合单用户场景。
-
-![x](../../../Resources/hive04.png)
-
-#### 多用户模式/远程服务器模式
-
-在生产环境中一般使用这种部署模式，在服务节点启动Thrift Server——HiveServer2，它集成了Driver和权限管控功能，单独对外提供服务；因为具有权限管控，所以适合多用户场景。MetaStore也进行单独部署，一般使用Mysql。
-
-在这种部署模式下，Hive Cli已经不推荐使用了，而使用Beeline/JDBC客户端与HiveServer2进行连接与交互。
-
-![x](../../../Resources/hive05.png)
+1. Java开发环境准备
 
 
 
-**参考：**
+## Java开发环境准备
 
-- https://gitbook.cn/gitchat/column/601d0baf1f136f458cf183a3
+为了之后Hive用户自定义函数（UDF）的学习，首先需要配置下Java环境，然后安装IDE工具。
+
+#### 语言环境安装
+
+首先是Java语言环境的安装。
+
+**安装流程**
+
+Windows环境和Linux环境的安装步骤不同。
+
+对于Windows环境，步骤如下：
+
+1. JDK1.8下载安装 
+2. 配置环境变量 
+3. 验证是否安装成功
+
+但现在windows版的JDK安装好后，自动会配置环境变量，所以可以省略第2步。
+
+对于Linux环境，步骤如下：
+
+1. JDK1.8下载、解压
+2. 配置环境变量
+3. 验证是否安装成功
+
+#### Windows平台安装步骤
+
+1. JDK安装，首先去官网下载Windows版的JDK（版本： JDK1.8）https://www.oracle.com/technetwork/java/javase/downloads/index.html，在Windows平台安装时，使用的是可视化安装，这里不需要讲解太多。
+2. 配置环境变量（默认会配置，可以跳过，但如果之后的步骤执行错误，则需要手动配置）
+
+#### Linux平台安装步骤
+
+1. JDK下载、解压
+2. 配置环境变量，将以下命令中的{path to java}更改为JDK的安装目录
+
+```sh
+# 编辑配置文件
+vi /etc/profile
+# 在末尾添加
+export JAVA_HOME={path to java}
+export Path=$Path:$JAVA_HOME/bin
+# 使环境变量生效
+source /etc/profile
+
+# 测试安装是否成功
+java –version
+```
+
+#### Hive开发Jar包获取
+
+Hive开发Jar包可以使用Maven进行管理，也可以直接使用Hive安装目录下提供的jar包。专栏以直接导入jar包的方式为主，有Maven使用经验的直接导入以下依赖。
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-client -->
+<dependency>
+<groupId>org.apache.hadoop</groupId>
+<artifactId>hadoop-client</artifactId>
+<version>2.7.7</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.hive/hive-exec -->
+<dependency>
+<groupId>org.apache.hive</groupId>
+<artifactId>hive-exec</artifactId>
+<version>2.3.7</version>
+</dependency>
+```
+
+Hive安装目录下的lib目录下会提供开发所需的Jar包，使用脚本安装的话为/opt/app/apache-hive-2.3.7-bin/lib目录。找到hive-exec-2.3.7.jar。
+
+除了Hive的开发Jar包之外，还需要依赖Hadoop公共开发包。这些Jar包，可以在Hadoop安装目录下的share/hadoop/common目录下获取。将hadoop-common-2.7.7.jar和其依赖的lib下的所有jar包下载到本地。
+
+其中lib目录下的jar包较多，可以使用zip命令打包后再进行下载：zip file.zip ./*
+
+如果使用的是XShell，那么可以安装lrzsz包，使用sz [path]命令将文件下载到本地，如果是上传文件，则使用的是rz命令。
+
+所依赖的Jar包，可以按照上述步骤，自行从集群安装目录进行拷贝，当然也可以直接从网盘下载，链接下附：
+
+链接：https://pan.baidu.com/s/1XpZOVpff53ACloKb9sk9Yg  提取码：ppkm
+
+#### 开发工具
+
+主流的Java开发工具有：
+
+1. IntelliJ IDEA：IDEA是JVM企业开发使用最多的IDE工具，为最大化的开发效率而设计。提供静态代码检查和沉浸式编程体验
+2. Eclipes：免费的Java开发工具，几乎是每个Java入门初学者的必备
+3. 其他：Subline Text、Atom、VS Code
+
+
+
+
+

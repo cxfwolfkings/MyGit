@@ -259,11 +259,60 @@ kafka-console-consumer.sh --bootstrap-server kafka2:9092 --topic test001 --from-
 kafka-console-consumer.sh --bootstrap-server kafka3:9092 --topic test001 --from-beginning
 ```
 
+server.properties常用参数介绍：
+
+```properties
+# 当前机器在集群中的唯一标识，和zookeeper的myid性质一样，要求集群中每个broker.id都说不一样的，可以从0开始递增，也可以从1开始递增
+broker.id=0
+# 监听地址，需要提供外网服务的话，要设置本地的IP地址，当前kafka对外提供服务的端口默认是9092
+listeners=PLAINTEXT://test1:9092
+# 这个是borker进行网络处理的线程数
+num.network.threads=3
+# 这个是borker进行I/O处理的线程数
+num.io.threads=8
+# 发送缓冲区buffer大小，数据不是一下子就发送的，先回存储到缓冲区了到达一定的大小后在发送，能提高性能
+socket.send.buffer.bytes=102400
+# kafka接收缓冲区大小，当数据到达一定大小后在序列化到磁盘
+socket.receive.buffer.bytes=102400
+# 这个参数是向kafka请求消息或者向kafka发送消息的请请求的最大数，这个值不能超过java的堆栈大小
+socket.request.max.bytes=104857600
+# 消息存放的目录，这个目录可以配置为“，”逗号分割的表达式，上面的num.io.threads要大于这个目录的个数这个目录，
+# 如果配置多个目录，新创建的topic他把消息持久化的地方是，当前以逗号分割的目录中，那个分区数最少就放那一个
+log.dirs=/tmp/kafka-logs
+# 默认的分区数，一个topic默认1个分区数
+num.partitions=1
+# 每个数据目录用来日志恢复的线程数目
+num.recovery.threads.per.data.dir=1
+# topic的offset的备份份数
+offsets.topic.replication.factor=1
+# 事务主题的复制因子（设置更高以确保可用性）。 内部主题创建将失败，直到群集大小满足此复制因素要求。
+transaction.state.log.replication.factor=1
+# 覆盖事务主题的min.insync.replicas配置。
+transaction.state.log.min.isr=1
+# 默认消息的最大持久化时间，168小时，7天
+log.retention.hours=168
+# 日志达到删除大小的阈值。每个topic下每个分区保存数据的最大文件大小；注意，这是每个分区的上限，因此这个数值乘以分区的个数就是每个topic保存的数据总量
+log.retention.bytes=1073741824
+# 这个参数是：因为kafka的消息是以追加的形式落地到文件，当超过这个值的时候，kafka会新起一个文件
+log.segment.bytes=1073741824
+# 每隔300000毫秒去检查上面配置的log失效时间
+log.retention.check.interval.ms=300000
+# 是否启用log压缩，一般不用启用，启用的话可以提高性能
+log.cleaner.enable=true
+# 设置zookeeper的连接端口,多个地址以逗号(,)隔开，后面可以跟一个kafka在Zookeeper中的根znode节点的路径
+zookeeper.connect=localhost:2181
+# 设置zookeeper的连接超时时间
+zookeeper.connection.timeout.ms=18000
+# 在执行第一次再平衡之前，group协调员将等待更多消费者加入group的时间
+group.initial.rebalance.delay.ms=0
+```
+
 
 
 参考：
 
 - [kafka命令](https://www.orchome.com/454)
+- [Kafka基础教程](https://www.cnblogs.com/shanfeng1000/p/13035700.html)
 
 
 
