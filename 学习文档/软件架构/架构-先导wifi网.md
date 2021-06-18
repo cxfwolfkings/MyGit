@@ -4,6 +4,7 @@
 
 1. 安装部署
    - [IIS部署](#IIS部署)
+   - [前端部署及问题](#前端部署及问题)
 2. 运维监控
 
    - [数据库](#数据库)
@@ -21,8 +22,7 @@
 10. [压缩备份](#压缩备份)
 11. [复制环境](#复制环境)
 12. [镜像生成](#镜像生成)
-14. [Redis集群](#Redis集群)
-15. [部署前端应用](#部署前端应用)
+13. [Redis集群](#Redis集群)
 16. [部署后端微服务](#部署后端微服务)
 18. [外网服务器部署](#外网服务器部署)
     - [nginx安装](#nginx安装)
@@ -1528,12 +1528,26 @@ redis-cli -p 7001 cluster nodes
 
 
 
-### 部署前端应用
+### 前端部署及问题
+
+**1. 通过容器启动**
 
 ```sh
 # 启动前端
 docker run -d -p 6100:6100 -v /data/sftp/mysftp/upload/pmweb/:/app --name pmweb pmweb
 ```
+
+**2. 通过 windows iis 服务器启动**
+
+服务器IIS安装不上url重写模块：
+
+> 解决方案：
+>
+> 打开注册表编辑器，在HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\InetStp位置
+>
+> 把MajorVersion的值改为9之后，就可以安装了，安装完成之后，再把MajorVersion的值改回10
+
+
 
 
 

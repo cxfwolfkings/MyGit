@@ -2,7 +2,9 @@
 
 1. 简介
 2. [仓储](#仓储)
-3. [命令](#命令)
+3. 命令
+   - [保存镜像](#保存镜像)
+   - [载入镜像](#载入镜像)
 4. [Dockerfile](#Dockerfile)
 
 
@@ -518,7 +520,7 @@ docker tag my_image:v1.0 my:v0.1
 
 运行了上面的指令我们就得到了一个新的，和原来的镜像一模一样的镜像。
 
-**镜像保存**
+#### 保存镜像
 
 ```sh
 # 创建一个镜像的压缩文件，这个文件能够在另外一个主机的 Docker 上使用。
@@ -530,16 +532,15 @@ docker save <image-id>
 使用示例：
 
 ```sh
-# 保存 centos 镜像到 centos_images.tar 文件
+# -o 和 > 表示输出到文件
 docker save -o centos_images.tar centos:centos6
-# 或者直接重定向
-docker save -o centos_images.tar centos:centos6 > centos_images.tar
+docker save > centos_images.tar centos:centos6
 ```
 
-**载入镜像**
+#### 载入镜像
 
 ```sh
-# 使用 docker load 命令可以载入镜像，其中 image 可以为标签或ID。这将导入镜像及相关的元数据信息（包括标签等），可以使用 docker images 命令进行查看。我们先删除原有的 Colin/test 镜像，执行查看镜像，然后在导入镜像
+# -i 和 < 表示从文件输入。会成功导入镜像及相关元数据，包括tag信息
 docker load --input test.jar
 # 可能这个镜像的名字不符合 docker 的要求，重新命名一下
 docker tag <ImageId> <ImageName>
