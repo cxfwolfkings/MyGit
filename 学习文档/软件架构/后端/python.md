@@ -123,7 +123,7 @@ Python的版本号分为三段，形如A.B.C。其中A表示大版本号，一�
 
 ## 闭包
 
-![x](D:/WorkingDir/Office/Resources/python007.png)
+![x](../../../Resources/py/python007.png)
 
 
 

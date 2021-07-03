@@ -890,8 +890,8 @@ chmod 755 /data/sftp/mysftp
 
 # 设置可以写入的目录
 mkdir /data/sftp/mysftp/upload
-chown sftp:sftp /data/sftp/mysftp/upload
-chmod 755 /data/sftp/mysftp/upload
+chown -R sftp:sftp /data/sftp/mysftp/upload
+chmod 755 -R /data/sftp/mysftp/upload
 
 # 关闭selinux：
 vim /etc/selinux/config
@@ -1230,6 +1230,11 @@ RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shang
 # ENV TZ=Asia/Shanghai
 # RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ENTRYPOINT ["dotnet", "LeadChina.Gateway.dll"]
+
+# 通用镜像，根据命令执行程序
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
+WORKDIR /app
+RUN sed -i 's/TLSv1.2/TLSv1.0/g' /etc/ssl/openssl.cnf
 ```
 
 认证服务器：
@@ -1757,6 +1762,10 @@ server {
 
 ### 一键部署
 
+> docker 运行起来，就马上结束了。猜测是像程序开发的开多线程一样，“主线程开了线程，不等线程，自己就退出了，由于主线程退出，进程也跟着退出了，导致一个线程都没有跑起来”。
+>
+> 上面cmd 都是要求**常驻**的，没有顺序要求，那么在命令中，前面的几个都加上&，最后一个命令不加，也就是前面几个扔后台运行，最后一个直接运行，使得docker 和最后一个cmd 一样“生命周期”，这样就做到几个cmd 并行运行了。**正确**配置如下：
+
 ```yml
 version: '3.7'
 
@@ -1770,6 +1779,27 @@ services:
       - 7080:7080
     volumes:
       - /data/sftp/mysftp/upload/lead/gateway/:/app
+    environment:
+      - TZ=Asia/Shanghai
+    command: ./LeadChina.ApiGateway
+    #command: /bin/bash -c "cp /app/dtest/config.default.yml /app/config.yml && python -u /app/dtest/tcc.py"
+    #command: 串行执行
+    #  - sh
+    #  - -c 
+    #  - |
+    #      cmd1
+    #      cmd2
+    #      cmd3
+    #command: 并行执行（最后一个不加&）
+    #  - sh
+    #  - -c
+    #  - |
+    #      cmd1 &
+    #      cmd2 &
+    #      cmd3
+    restart: always
+    depends_on:
+      - consul
     networks:
       default:
         ipv4_address: 172.20.0.3
